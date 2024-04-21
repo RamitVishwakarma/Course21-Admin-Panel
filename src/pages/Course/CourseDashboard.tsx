@@ -40,7 +40,7 @@ const AllCourses: React.FC = () => {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
-    timeZone: 'UTC',
+    timeZone: 'Asia/Kolkata',
   };
 
   return (
@@ -102,9 +102,12 @@ const AllCourses: React.FC = () => {
                   <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
                       {/* View button */}
-                      <button className="hover:text-primary">
+                      <Link
+                        to={`/admin/view-course/${course.id}`}
+                        className="hover:text-primary"
+                      >
                         <EyeIcon className="h-4 w-4" />
-                      </button>
+                      </Link>
                       {/* Delete button */}
                       <DeleteCourse courseId={course.id} />
                       {/* Edit button */}

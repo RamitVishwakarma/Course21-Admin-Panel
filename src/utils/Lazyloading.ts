@@ -12,3 +12,5 @@ export const CourseDashboard = loadable(
 export const UpdateCourse = loadable(
   () => import('../pages/Course/UpdateCourse'),
 );
+
+export const ViewCourse = loadable(() => import('../pages/Course/ViewCourse'));

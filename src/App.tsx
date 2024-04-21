@@ -21,6 +21,7 @@ import {
   CreateCourse,
   CourseDashboard,
   UpdateCourse,
+  ViewCourse,
 } from './utils/Lazyloading';
 
 function App() {
@@ -63,6 +64,7 @@ function App() {
           <Route path="create-course" element={<CreateCourse />} />
           <Route path="course-dashboard" element={<CourseDashboard />} />
           <Route path="update-course/:id" element={<UpdateCourse />} />
+          <Route path="view-course/:id" element={<ViewCourse />} />
         </Route>
 
         <Route
