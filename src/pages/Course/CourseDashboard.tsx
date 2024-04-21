@@ -2,7 +2,9 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/20/solid';
+import { EyeIcon, PencilIcon } from '@heroicons/react/20/solid';
+import DeleteCourse from '../../components/DeleteCourse';
+import { Link } from 'react-router-dom';
 
 const AllCourses: React.FC = () => {
   interface Course {
@@ -23,9 +25,8 @@ const AllCourses: React.FC = () => {
     axios
       .get(`${import.meta.env.VITE_BACKEND_URL}courses`)
       .then((res) => {
-        console.log(res.data.data);
         setCourses(res.data.data);
-        console.log(courses);
+        console.log(res.data.data);
       })
       .catch((err) => {
         console.log(err);
@@ -105,13 +106,15 @@ const AllCourses: React.FC = () => {
                         <EyeIcon className="h-4 w-4" />
                       </button>
                       {/* Delete button */}
-                      <button className="hover:text-primary">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
+                      <DeleteCourse courseId={course.id} />
                       {/* Edit button */}
-                      <button className="hover:text-primary">
+
+                      <Link
+                        to={`/admin/update-course/${course.id}`}
+                        className="hover:text-primary"
+                      >
                         <PencilIcon className="h-4 w-4" />
-                      </button>
+                      </Link>
                     </div>
                   </td>
                 </tr>

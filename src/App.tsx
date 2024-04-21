@@ -19,7 +19,8 @@ import {
   SignUp,
   ProtectedRoute,
   CreateCourse,
-  AllCourses,
+  CourseDashboard,
+  UpdateCourse,
 } from './utils/Lazyloading';
 
 function App() {
@@ -60,7 +61,8 @@ function App() {
 
         <Route path="/admin/" element={<ProtectedRoute />}>
           <Route path="create-course" element={<CreateCourse />} />
-          <Route path="course-dashboard" element={<AllCourses />} />
+          <Route path="course-dashboard" element={<CourseDashboard />} />
+          <Route path="update-course/:id" element={<UpdateCourse />} />
         </Route>
 
         <Route

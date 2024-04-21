@@ -6,4 +6,9 @@ export const ProtectedRoute = loadable(() => import('./ProtectedRoute'));
 export const CreateCourse = loadable(
   () => import('../pages/Course/CreateCourse'),
 );
-export const AllCourses = loadable(() => import('../pages/Course/AllCourses'));
+export const CourseDashboard = loadable(
+  () => import('../pages/Course/CourseDashboard'),
+);
+export const UpdateCourse = loadable(
+  () => import('../pages/Course/UpdateCourse'),
+);

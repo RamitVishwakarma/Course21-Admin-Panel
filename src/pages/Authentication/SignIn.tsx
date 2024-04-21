@@ -36,7 +36,7 @@ const SignIn: React.FC = () => {
         console.log(res);
         console.log(res.data.token);
         sessionStorage.setItem('Authorisation', res.data.token);
-        navigate('/admin/dashboard');
+        navigate('/admin/course-dashboard');
       })
       .catch((err) => {
         console.log(err);
