@@ -23,6 +23,7 @@ import {
   UpdateCourse,
   ViewCourse,
 } from './utils/Lazyloading';
+import AccordionDemo from './AccordionTest';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -66,6 +67,8 @@ function App() {
           <Route path="update-course/:id" element={<UpdateCourse />} />
           <Route path="view-course/:id" element={<ViewCourse />} />
         </Route>
+
+        <Route path="/accordion" element={<AccordionDemo />} />
 
         <Route
           path="/sjske"

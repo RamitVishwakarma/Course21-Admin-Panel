@@ -70,7 +70,6 @@ const ViewCourse: React.FC = () => {
     hour12: true,
     timeZone: 'Asia/Kolkata',
   };
-  // Add your component logic here
 
   return (
     <DefaultLayout>
