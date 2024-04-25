@@ -3,6 +3,14 @@ import { useParams } from 'react-router-dom';
 import DefaultLayout from '../../layout/DefaultLayout';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { PencilIcon } from '@heroicons/react/20/solid';
+import { Link } from 'react-router-dom';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -40,13 +48,6 @@ const ViewCourse: React.FC = () => {
     modules: Modules[];
   }
 
-  type Product = {
-    name: string;
-    category: string;
-    price: number;
-    sold: number;
-    profit: number;
-  };
   const [course, setCourse] = useState<Course>();
 
   useEffect(() => {
@@ -90,25 +91,123 @@ const ViewCourse: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
+        <div className="grid grid-cols-6 border-y text-2xl font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
           <div className="col-span-3 flex items-center">
             <p className="font-medium">Modules</p>
           </div>
         </div>
 
         {course?.modules.map((modules, key) => (
-          <div
-            className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
+          <Accordion
+            className="py-2 px-4 md:px-6 2xl:px-7.5"
             key={key}
+            type="single"
+            collapsible
           >
-            <div className="col-span-3 flex items-center">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <p className="text-sm text-black dark:text-white">
-                  {modules.name}
-                </p>
+            <AccordionItem value={`item-${key}`}>
+              <AccordionTrigger>{modules.name}</AccordionTrigger>
+
+              <AccordionContent>
+                <table className="w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-2 text-left dark:bg-meta-4">
+                      <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                        Name
+                      </th>
+                      <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                        Created At
+                      </th>
+                      <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                        Updated At
+                      </th>
+                      <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                        Trial
+                      </th>
+                      <th className="py-4 px-4 font-medium text-black dark:text-white">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {modules.lectures.map((lecture, key) => (
+                      <tr key={key}>
+                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                          <h5 className="font-medium text-black dark:text-white ">
+                            {lecture.name}
+                          </h5>
+                        </td>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                          <p className="text-black dark:text-white text-start">
+                            {new Date(lecture.created_at).toLocaleString(
+                              'en-IN',
+                              dateOptions,
+                            )}
+                          </p>
+                        </td>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                          <p className="text-black dark:text-white text-start">
+                            {new Date(lecture.updated_at).toLocaleString(
+                              'en-IN',
+                              dateOptions,
+                            )}
+                          </p>
+                        </td>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark ">
+                          <p
+                            className={`inline-flex rounded-full bg-opacity-10 py-1  text-sm font-medium text-start `}
+                          >
+                            {lecture.is_trial ? 'Trial' : 'Paid'}
+                          </p>
+                        </td>
+                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                          <div className="flex items-center space-x-3.5">
+                            {/* Update */}
+                            <Link
+                              to={`/admin/update-course/${course.id}`}
+                              className="hover:text-primary "
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* {modules.lectures.map((lectures, key) => (
+                  <div
+                    className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
+                    key={key}
+                  >
+                    <div className="col-span-3 flex items-center">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <p className="text-sm text-black dark:text-white">
+                          {lectures.name}
+                        </p>
+                        <p className="text-sm text-black dark:text-white">
+                          {lectures.is_trial ? 'Trial' : 'Paid'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))} */}
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* <div
+              className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
+              key={key}
+            >
+              <div className="col-span-3 flex items-center">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <p className="text-sm text-black dark:text-white">
+                    {modules.name}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
+            </div> */}
+          </Accordion>
         ))}
       </div>
     </DefaultLayout>

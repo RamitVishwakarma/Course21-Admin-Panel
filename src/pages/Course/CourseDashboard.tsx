@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { EyeIcon, PencilIcon } from '@heroicons/react/20/solid';
+import { EyeIcon, PencilIcon, PlusCircleIcon } from '@heroicons/react/20/solid';
 import DeleteCourse from '../../components/DeleteCourse';
 import { Link } from 'react-router-dom';
 
@@ -47,6 +47,13 @@ const AllCourses: React.FC = () => {
     <DefaultLayout>
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">
+          <Link
+            to="/admin/create-course"
+            className="m-2 inline-flex items-center justify-center gap-2.5 rounded-full bg-black py-4 px-10 text-center font-medium text-white hover:bg-opacity-80 lg:px-8 xl:px-10"
+          >
+            <PlusCircleIcon className="h-5 w-5" />
+            Create Course
+          </Link>
           <table className="w-full table-auto">
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
