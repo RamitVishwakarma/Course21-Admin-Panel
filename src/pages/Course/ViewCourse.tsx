@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/accordion';
 import { PencilIcon } from '@heroicons/react/20/solid';
 import { Link } from 'react-router-dom';
+import { PlusCircleIcon } from '@heroicons/react/20/solid';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -91,9 +92,16 @@ const ViewCourse: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-6 border-y text-2xl font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
-          <div className="col-span-3 flex items-center">
-            <p className="font-medium">Modules</p>
+        <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-strokedark md:px-6 2xl:px-7.5">
+          <div className=" flex items-center justify-between">
+            <p className="font-medium text-2xl">Modules</p>
+            <Link
+              to={`/admin/create-module/${course?.id}`}
+              className=" inline-flex items-center justify-center gap-2.5 rounded-full bg-black py-2 px-6 text-center font-medium text-white hover:bg-opacity-80 lg:px-4 xl:px-6"
+            >
+              <PlusCircleIcon className="h-5 w-5" />
+              <span>Add Modules</span>
+            </Link>
           </div>
         </div>
 
@@ -105,14 +113,27 @@ const ViewCourse: React.FC = () => {
             collapsible
           >
             <AccordionItem value={`item-${key}`}>
-              <AccordionTrigger>{modules.name}</AccordionTrigger>
+              <AccordionTrigger>
+                <span className="flex items-center gap-3">
+                  {modules.name}
+                  <div className="flex items-center space-x-3.5">
+                    {/* Update Module */}
+                    <Link
+                      to={`/admin/update-course/${course.id}`}
+                      className="hover:text-primary "
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </span>
+              </AccordionTrigger>
 
               <AccordionContent>
                 <table className="w-full table-auto">
                   <thead>
                     <tr className="bg-gray-2 text-left dark:bg-meta-4">
                       <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                        Name
+                        Lectures
                       </th>
                       <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                         Created At

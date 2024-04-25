@@ -1,23 +1,23 @@
 import React from 'react';
 import DefaultLayout from '../../layout/DefaultLayout';
-import {
-  CurrencyRupeeIcon,
-  IdentificationIcon,
-} from '@heroicons/react/20/solid';
+import { IdentificationIcon } from '@heroicons/react/20/solid';
 import { useState } from 'react';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
-const Dashboard: React.FC = () => {
+const CreateModule: React.FC = () => {
+  const courseId = useParams().id;
+
   interface FormData {
     name: string;
-    price: number;
     image: File;
+    course_id: string | undefined;
   }
 
   const [data, setData] = useState<FormData>({
     name: '',
-    price: 0,
     image: new File([], ''),
+    course_id: courseId,
   });
 
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,34 +33,34 @@ const Dashboard: React.FC = () => {
     e.preventDefault();
     console.log(data);
     axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}courses`, data, {
+      .post(`${import.meta.env.VITE_BACKEND_URL}modules`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
       .then((res) => {
         console.log(res);
-        alert('Course Added Successfully');
+        alert('Module Added Successfully');
       })
       .catch((err) => {
         console.log(err);
-        alert('Course Addition Failed');
+        alert('Module Addition Failed');
       });
   };
   return (
     <DefaultLayout>
       <form onSubmit={formSubmitHandler}>
-        {/* Course Name */}
+        {/* Module Name */}
         <div className="mb-4">
           <label className="mb-2.5 block font-medium text-black dark:text-white">
-            Course Name
+            Module Name
           </label>
           <div className="relative">
             <input
               type="text"
               name="name"
               onChange={handleFormData}
-              placeholder="Enter Course Name"
+              placeholder="Enter Module Name"
               className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
             />
             <span className="absolute right-4 top-4">
@@ -69,29 +69,10 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Price */}
-        <div className="mb-4">
-          <label className="mb-2.5 block font-medium text-black dark:text-white">
-            Course Price
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              name="price"
-              onChange={handleFormData}
-              placeholder="Enter Course Price"
-              className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-            />
-            <span className="absolute right-4 top-4">
-              <CurrencyRupeeIcon className="w-6 h-6 text-bodydark" />
-            </span>
-          </div>
-        </div>
-
         {/* Photo upload */}
         <div className="mb-4">
           <label className="mb-2.5 block font-medium text-black dark:text-white">
-            Cover Image
+            Module Image
           </label>
           <input
             type="file"
@@ -113,4 +94,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default CreateModule;
