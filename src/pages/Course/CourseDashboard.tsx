@@ -2,10 +2,11 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { EyeIcon, PencilIcon, PlusCircleIcon } from '@heroicons/react/20/solid';
+import { EyeIcon } from '@heroicons/react/20/solid';
 import DeleteCourse from './DeleteCourse';
 import { Link } from 'react-router-dom';
-import CreateCoursePopup from './CreateCoursePopup';
+import CreateCourse from './CreateCourse';
+import UpdateCourse from './UpdateCourse';
 
 const AllCourses: React.FC = () => {
   interface Course {
@@ -15,12 +16,17 @@ const AllCourses: React.FC = () => {
     validity: number | null;
     manager: string | null;
     price: number;
+    image_path: string;
     created_at: Date;
     updated_at: Date;
     deleted_at: Date | null;
   }
-
   const [courses, setCourses] = useState<Course[]>([]);
+  //refresh page logic
+  const [refresh, setRefresh] = useState(false);
+  const refreshPage = () => {
+    setRefresh(!refresh);
+  };
 
   useEffect(() => {
     axios
@@ -32,7 +38,7 @@ const AllCourses: React.FC = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [refresh]);
 
   const dateOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -48,11 +54,12 @@ const AllCourses: React.FC = () => {
     <DefaultLayout>
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">
-          <CreateCoursePopup />
+          {/* Create a course route cum popup */}
+          <CreateCourse />
           <table className="w-full table-auto">
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                <th className="min-w-[200px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
                   Name
                 </th>
                 <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
@@ -111,15 +118,17 @@ const AllCourses: React.FC = () => {
                         <EyeIcon className="h-4 w-4" />
                       </Link>
                       {/* Delete button */}
-                      <DeleteCourse courseId={course.id} />
-                      {/* Edit button */}
-
-                      <Link
-                        to={`/admin/update-course/${course.id}`}
-                        className="hover:text-primary"
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                      </Link>
+                      <DeleteCourse
+                        courseId={course.id}
+                        refresh={refreshPage}
+                      />
+                      {/* Update button */}
+                      <UpdateCourse
+                        courseId={course.id}
+                        name={course.name}
+                        image_path={course.image_path}
+                        refresh={refreshPage}
+                      />
                     </div>
                   </td>
                 </tr>

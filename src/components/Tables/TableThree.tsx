@@ -1,4 +1,4 @@
-import { Package } from '../../types/package';
+import { Package } from '../../pages/not using/types/package';
 
 const packageData: Package[] = [
   {

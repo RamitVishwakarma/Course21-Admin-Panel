@@ -3,16 +3,16 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
-import Calendar from './pages/Calendar';
-import Chart from './pages/Chart';
-import ECommerce from './pages/Dashboard/ECommerce';
-import FormElements from './pages/Form/FormElements';
-import FormLayout from './pages/Form/FormLayout';
-import Profile from './pages/Profile';
-import Settings from './pages/Settings';
-import Tables from './pages/Tables';
-import Alerts from './pages/UiElements/Alerts';
-import Buttons from './pages/UiElements/Buttons';
+import Calendar from './pages/not using/Calendar';
+import Chart from './pages/not using/Chart';
+import ECommerce from './pages/not using/Dashboard/ECommerce';
+import FormElements from './pages/not using/Form/FormElements';
+import FormLayout from './pages/not using/Form/FormLayout';
+import Profile from './pages/not using/Profile';
+import Settings from './pages/not using/Settings';
+import Tables from './pages/not using/Tables';
+import Alerts from './pages/not using/UiElements/Alerts';
+import Buttons from './pages/not using/UiElements/Buttons';
 
 import {
   SignIn,
@@ -65,9 +65,9 @@ function App() {
 
         <Route path="/admin/" element={<ProtectedRoute />}>
           {/* Course Section */}
-          <Route path="create-course" element={<CreateCourse />} />
+          {/* <Route path="create-course" element={<CreateCourse />} /> */}
           <Route path="course-dashboard" element={<CourseDashboard />} />
-          <Route path="update-course/:id" element={<UpdateCourse />} />
+          {/* <Route path="update-course/:id" element={<UpdateCourse />} /> */}
           <Route path="view-course/:id" element={<ViewCourse />} />
           {/* Module Section */}
           <Route path="create-module/:id" element={<CreateModule />} />

@@ -2,9 +2,17 @@ import { Dialog, Transition } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/solid';
 import { Fragment, useState } from 'react';
 import axios from 'axios';
+import { useToast } from '@/components/ui/use-toast';
 
-export default function DeleteCourse(courseId: any) {
+export default function DeleteCourse({
+  courseId,
+  refresh,
+}: {
+  courseId: number;
+  refresh: () => void;
+}) {
   let [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   function closeModal() {
     setIsOpen(false);
@@ -15,14 +23,21 @@ export default function DeleteCourse(courseId: any) {
   }
 
   const deleteCourse = () => {
+    // console.log(courseId);
     axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}courses/${courseId.courseId}`)
+      .delete(`${import.meta.env.VITE_BACKEND_URL}courses/${courseId}`)
       .then((res) => {
         console.log(res);
-        alert('Course deleted successfully');
+        toast({
+          title: 'Course deleted successfully',
+        });
+        refresh();
         closeModal();
       })
       .catch((err) => {
+        toast({
+          title: 'Course deletion failed',
+        });
         console.log(err);
       });
   };
