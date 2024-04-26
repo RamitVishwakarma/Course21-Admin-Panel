@@ -12,6 +12,7 @@ import {
 import { PencilIcon } from '@heroicons/react/20/solid';
 import { Link } from 'react-router-dom';
 import CreateModule from '../Modules/CreateModule';
+import UpdateModule from '../Modules/UpdateModule';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -113,12 +114,11 @@ const ViewCourse: React.FC = () => {
                   {modules.name}
                   <div className="flex items-center space-x-3.5">
                     {/* Update Module */}
-                    <Link
-                      to={`/admin/update-module/${modules.id}`}
-                      className="hover:text-primary "
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </Link>
+                    <UpdateModule
+                      courseId={Number(id)}
+                      name={modules.name}
+                      image_path={modules.image_path}
+                    />
                   </div>
                 </span>
               </AccordionTrigger>
