@@ -60,7 +60,7 @@ const AllCourses: React.FC = () => {
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
                 <th className="min-w-[200px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                  Name
+                  Course
                 </th>
                 <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                   Created At
@@ -80,10 +80,20 @@ const AllCourses: React.FC = () => {
               {courses.map((course) => (
                 <tr key={course.id}>
                   <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                    <h5 className="font-medium text-black dark:text-white">
-                      {course.name}
-                    </h5>
-                    <p className="text-sm">₹{course.price}</p>
+                    <div className="flex gap-4">
+                      {course.image_path ? (
+                        <img
+                          className="h-12.5 w-15 rounded-md"
+                          src={course.image_path}
+                        />
+                      ) : null}
+                      <div>
+                        <h5 className="font-medium text-black dark:text-white">
+                          {course.name}
+                        </h5>
+                        <p className="text-sm">₹{course.price}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                     <p className="text-black dark:text-white text-start">

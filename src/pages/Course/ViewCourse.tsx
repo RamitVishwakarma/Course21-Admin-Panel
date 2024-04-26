@@ -122,7 +122,6 @@ const ViewCourse: React.FC = () => {
                   </div>
                 </span>
               </AccordionTrigger>
-
               <AccordionContent>
                 <table className="w-full table-auto">
                   <thead>

@@ -74,7 +74,7 @@ export default function UpdateModule({
         <PencilIcon className="h-4 w-4 cursor-pointer hover:text-primary" />
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle>Create Module</DialogTitle>
+        <DialogTitle>Update Module</DialogTitle>
         <form onSubmit={formSubmitHandler}>
           {/* Name */}
           <div className="mb-4">

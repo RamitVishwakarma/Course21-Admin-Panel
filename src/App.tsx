@@ -3,16 +3,16 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
-// import Calendar from './pages/not using/Calendar';
-// import Chart from './pages/not using/Chart';
-// import ECommerce from './pages/not using/Dashboard/ECommerce';
-// import FormElements from './pages/not using/Form/FormElements';
-// import FormLayout from './pages/not using/Form/FormLayout';
-// import Profile from './pages/not using/Profile';
-// import Settings from './pages/not using/Settings';
-// import Tables from './pages/not using/Tables';
-// import Alerts from './pages/not using/UiElements/Alerts';
-// import Buttons from './pages/not using/UiElements/Buttons';
+import Calendar from './pages/not using/Calendar';
+import Chart from './pages/not using/Chart';
+import ECommerce from './pages/not using/Dashboard/ECommerce';
+import FormElements from './pages/not using/Form/FormElements';
+import FormLayout from './pages/not using/Form/FormLayout';
+import Profile from './pages/not using/Profile';
+import Settings from './pages/not using/Settings';
+import Tables from './pages/not using/Tables';
+import Alerts from './pages/not using/UiElements/Alerts';
+import Buttons from './pages/not using/UiElements/Buttons';
 
 import {
   SignIn,
@@ -88,7 +88,7 @@ function App() {
           <Route path="update-module/:id" element={<UpdateModule />} />
         </Route>
 
-        {/* <Route
+        <Route
           path="/sjske"
           element={
             <>
@@ -133,6 +133,7 @@ function App() {
             </>
           }
         />
+
         <Route
           path="/tables"
           element={
@@ -177,7 +178,7 @@ function App() {
               <Buttons />
             </>
           }
-        /> */}
+        />
       </Routes>
       <Toaster />
     </>
