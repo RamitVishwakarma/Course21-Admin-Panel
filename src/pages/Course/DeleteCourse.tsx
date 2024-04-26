@@ -15,7 +15,6 @@ export default function DeleteCourse(courseId: any) {
   }
 
   const deleteCourse = () => {
-    console.log('Delete button clicked', courseId, courseId.courseId);
     axios
       .delete(`${import.meta.env.VITE_BACKEND_URL}courses/${courseId.courseId}`)
       .then((res) => {

@@ -119,7 +119,7 @@ const ViewCourse: React.FC = () => {
                   <div className="flex items-center space-x-3.5">
                     {/* Update Module */}
                     <Link
-                      to={`/admin/update-course/${course.id}`}
+                      to={`/admin/update-module/${modules.id}`}
                       className="hover:text-primary "
                     >
                       <PencilIcon className="h-4 w-4" />

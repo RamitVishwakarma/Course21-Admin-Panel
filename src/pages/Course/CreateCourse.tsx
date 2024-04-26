@@ -6,8 +6,10 @@ import {
 } from '@heroicons/react/20/solid';
 import { useState } from 'react';
 import axios from 'axios';
+import { useToast } from '@/components/ui/use-toast';
 
 const Dashboard: React.FC = () => {
+  const { toast } = useToast();
   interface FormData {
     name: string;
     price: number;
@@ -40,11 +42,17 @@ const Dashboard: React.FC = () => {
       })
       .then((res) => {
         console.log(res);
-        alert('Course Added Successfully');
+        toast({
+          title: 'Course Added Successfully',
+        });
+        // alert('Course Added Successfully');
       })
       .catch((err) => {
         console.log(err);
-        alert('Course Addition Failed');
+        toast({
+          title: 'Course Addition Failed',
+        });
+        // alert('Course Addition Failed');
       });
   };
   return (

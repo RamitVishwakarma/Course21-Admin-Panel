@@ -25,6 +25,7 @@ import {
   CreateModule,
   UpdateModule,
 } from './utils/Lazyloading';
+import { Toaster } from './components/ui/toaster';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -164,6 +165,7 @@ function App() {
           }
         />
       </Routes>
+      <Toaster />
     </>
   );
 }
