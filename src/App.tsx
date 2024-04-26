@@ -3,24 +3,22 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
-import Calendar from './pages/not using/Calendar';
-import Chart from './pages/not using/Chart';
-import ECommerce from './pages/not using/Dashboard/ECommerce';
-import FormElements from './pages/not using/Form/FormElements';
-import FormLayout from './pages/not using/Form/FormLayout';
-import Profile from './pages/not using/Profile';
-import Settings from './pages/not using/Settings';
-import Tables from './pages/not using/Tables';
-import Alerts from './pages/not using/UiElements/Alerts';
-import Buttons from './pages/not using/UiElements/Buttons';
+// import Calendar from './pages/not using/Calendar';
+// import Chart from './pages/not using/Chart';
+// import ECommerce from './pages/not using/Dashboard/ECommerce';
+// import FormElements from './pages/not using/Form/FormElements';
+// import FormLayout from './pages/not using/Form/FormLayout';
+// import Profile from './pages/not using/Profile';
+// import Settings from './pages/not using/Settings';
+// import Tables from './pages/not using/Tables';
+// import Alerts from './pages/not using/UiElements/Alerts';
+// import Buttons from './pages/not using/UiElements/Buttons';
 
 import {
   SignIn,
   SignUp,
   ProtectedRoute,
-  CreateCourse,
   CourseDashboard,
-  UpdateCourse,
   ViewCourse,
   CreateModule,
   UpdateModule,
@@ -48,7 +46,7 @@ function App() {
           path="/auth/signin"
           element={
             <>
-              <PageTitle title="Signin | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="Signin | Course21 " />
               <SignIn />
             </>
           }
@@ -57,7 +55,7 @@ function App() {
           path="/auth/signup"
           element={
             <>
-              <PageTitle title="Signup | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="Signup | Course21 " />
               <SignUp />
             </>
           }
@@ -66,15 +64,31 @@ function App() {
         <Route path="/admin/" element={<ProtectedRoute />}>
           {/* Course Section */}
           {/* <Route path="create-course" element={<CreateCourse />} /> */}
-          <Route path="course-dashboard" element={<CourseDashboard />} />
+          <Route
+            path="course-dashboard"
+            element={
+              <>
+                <PageTitle title="Course | Dashboard " />
+                <CourseDashboard />
+              </>
+            }
+          />
           {/* <Route path="update-course/:id" element={<UpdateCourse />} /> */}
-          <Route path="view-course/:id" element={<ViewCourse />} />
+          <Route
+            path="view-course/:id"
+            element={
+              <>
+                <PageTitle title="Course | View " />
+                <ViewCourse />
+              </>
+            }
+          />
           {/* Module Section */}
           <Route path="create-module/:id" element={<CreateModule />} />
           <Route path="update-module/:id" element={<UpdateModule />} />
         </Route>
 
-        <Route
+        {/* <Route
           path="/sjske"
           element={
             <>
@@ -163,7 +177,7 @@ function App() {
               <Buttons />
             </>
           }
-        />
+        /> */}
       </Routes>
       <Toaster />
     </>

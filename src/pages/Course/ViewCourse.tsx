@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/accordion';
 import { PencilIcon } from '@heroicons/react/20/solid';
 import { Link } from 'react-router-dom';
-import { PlusCircleIcon } from '@heroicons/react/20/solid';
+import CreateModule from '../Modules/CreateModule';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -34,6 +34,7 @@ const ViewCourse: React.FC = () => {
     sequence_id: number;
     course_id: number;
     lectures: Lectures[];
+    image_path: string;
   }
 
   interface Course {
@@ -95,13 +96,7 @@ const ViewCourse: React.FC = () => {
         <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-strokedark md:px-6 2xl:px-7.5">
           <div className=" flex items-center justify-between">
             <p className="font-medium text-2xl">Modules</p>
-            <Link
-              to={`/admin/create-module/${course?.id}`}
-              className=" inline-flex items-center justify-center gap-2.5 rounded-full bg-black py-2 px-6 text-center font-medium text-white hover:bg-opacity-80 lg:px-4 xl:px-6"
-            >
-              <PlusCircleIcon className="h-5 w-5" />
-              <span>Add Modules</span>
-            </Link>
+            <CreateModule courseId={Number(id)} />
           </div>
         </div>
 
@@ -195,39 +190,8 @@ const ViewCourse: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
-
-                {/* {modules.lectures.map((lectures, key) => (
-                  <div
-                    className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
-                    key={key}
-                  >
-                    <div className="col-span-3 flex items-center">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <p className="text-sm text-black dark:text-white">
-                          {lectures.name}
-                        </p>
-                        <p className="text-sm text-black dark:text-white">
-                          {lectures.is_trial ? 'Trial' : 'Paid'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))} */}
               </AccordionContent>
             </AccordionItem>
-
-            {/* <div
-              className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
-              key={key}
-            >
-              <div className="col-span-3 flex items-center">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <p className="text-sm text-black dark:text-white">
-                    {modules.name}
-                  </p>
-                </div>
-              </div>
-            </div> */}
           </Accordion>
         ))}
       </div>
