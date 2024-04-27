@@ -9,13 +9,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { PencilIcon } from '@heroicons/react/20/solid';
-import { Link } from 'react-router-dom';
 import CreateModule from '../Modules/CreateModule';
 import UpdateModule from '../Modules/UpdateModule';
 import { Course } from '../../interfaces/Course';
 import Loader from '../../common/Loader';
 import CreateLecture from '../Lectures/CreateLecture';
+import UpdateLecture from '../Lectures/UpdateLecture';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -139,7 +138,6 @@ const ViewCourse: React.FC = () => {
                   </div>
                 </div>
               </AccordionTrigger>
-
               <AccordionContent>
                 <div className="p-2 text-lg text-end">
                   <CreateLecture
@@ -212,13 +210,14 @@ const ViewCourse: React.FC = () => {
                         </td>
                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                           <div className="flex items-center space-x-3.5">
-                            {/* Update */}
-                            <Link
-                              to={`/admin/update-course/${course.id}`}
-                              className="hover:text-primary "
-                            >
-                              <PencilIcon className="h-4 w-4" />
-                            </Link>
+                            <UpdateLecture
+                              lectureId={lecture.id}
+                              moduleId={modules.id}
+                              courseId={Number(id)}
+                              name={lecture.name}
+                              image_path={lecture.image_path}
+                              refreshPage={refreshPage}
+                            />
                           </div>
                         </td>
                       </tr>
