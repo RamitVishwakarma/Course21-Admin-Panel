@@ -14,7 +14,11 @@ import {
 import { useState } from 'react';
 import axios from 'axios';
 
-export default function CreateCourse() {
+export default function CreateCourse({
+  refreshPage,
+}: {
+  refreshPage: () => void;
+}) {
   const { toast } = useToast();
 
   interface FormData {
@@ -28,6 +32,7 @@ export default function CreateCourse() {
     price: 0,
     featured_image: new File([], ''),
   });
+
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.type === 'file') {
       setData({ ...data, [e.target.name]: e.target.files![0] });
@@ -50,6 +55,7 @@ export default function CreateCourse() {
         toast({
           title: 'Course Added Successfully',
         });
+        refreshPage();
         // alert('Course Added Successfully');
       })
       .catch((err) => {

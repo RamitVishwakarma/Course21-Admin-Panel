@@ -1,39 +1,27 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { EyeIcon } from '@heroicons/react/20/solid';
 import DeleteCourse from './DeleteCourse';
-import { Link } from 'react-router-dom';
 import CreateCourse from './CreateCourse';
 import UpdateCourse from './UpdateCourse';
+import { Course } from '../../interfaces/Course';
 
 const AllCourses: React.FC = () => {
-  interface Course {
-    id: number;
-    prefix: string | null;
-    name: string;
-    validity: number | null;
-    manager: string | null;
-    price: number;
-    image_path: string;
-    created_at: Date;
-    updated_at: Date;
-    deleted_at: Date | null;
-  }
   const [courses, setCourses] = useState<Course[]>([]);
   //refresh page logic
   const [refresh, setRefresh] = useState(false);
   const refreshPage = () => {
     setRefresh(!refresh);
   };
-
   useEffect(() => {
     axios
       .get(`${import.meta.env.VITE_BACKEND_URL}courses`)
       .then((res) => {
-        setCourses(res.data.data);
         console.log(res.data.data);
+        setCourses(res.data.data);
       })
       .catch((err) => {
         console.log(err);
@@ -55,7 +43,7 @@ const AllCourses: React.FC = () => {
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">
           {/* Create a course route cum popup */}
-          <CreateCourse />
+          <CreateCourse refreshPage={refreshPage} />
           <table className="w-full table-auto">
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">

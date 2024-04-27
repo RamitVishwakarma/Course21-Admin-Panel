@@ -13,44 +13,10 @@ import { PencilIcon } from '@heroicons/react/20/solid';
 import { Link } from 'react-router-dom';
 import CreateModule from '../Modules/CreateModule';
 import UpdateModule from '../Modules/UpdateModule';
+import { Course } from '../../interfaces/Course';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
-
-  interface Lectures {
-    id: number;
-    course_id: number;
-    module_id: number;
-    prefix: string;
-    name: string;
-    file_id: number;
-    is_trial: boolean;
-    created_at: Date;
-    updated_at: Date;
-  }
-
-  interface Modules {
-    id: number;
-    name: string;
-    sequence_id: number;
-    course_id: number;
-    lectures: Lectures[];
-    image_path: string;
-  }
-
-  interface Course {
-    id: number;
-    prefix: string | null;
-    name: string;
-    validity: number | null;
-    manager: string | null;
-    price: number;
-    created_at: Date;
-    updated_at: Date;
-    deleted_at: Date | null;
-    modules: Modules[];
-  }
-
   const [course, setCourse] = useState<Course>();
 
   useEffect(() => {
@@ -79,18 +45,38 @@ const ViewCourse: React.FC = () => {
     <DefaultLayout>
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="py-6 px-4 md:px-6 xl:px-7.5">
-          <h4 className="text-2xl font-semibold text-black dark:text-white">
-            {course?.name}
-          </h4>
-          <div className="text-sm">Price: ₹{course?.price}</div>
-          <div className="text-sm">
-            Validity:{course?.validity ? 'course.validity' : ' Lifetime'}
-          </div>
-          <div className="">
-            Last updated at:{' '}
-            {course?.updated_at
-              ? new Date(course.updated_at).toLocaleString('en-IN', dateOptions)
-              : null}
+          <div className="flex gap-4 items-center">
+            <div>
+              {course?.image_path ? (
+                <img
+                  src={course?.image_path}
+                  alt="course"
+                  className="w-40 h-40 rounded-md objet-cover"
+                />
+              ) : (
+                <div className="w-40 h-40 bg-gray-2 dark:bg-black text-white text-center flex items-center rounded-md">
+                  No image added update image in course edit
+                </div>
+              )}
+            </div>
+            <div>
+              <h4 className="text-2xl font-semibold text-black dark:text-white">
+                {course?.name}
+              </h4>
+              <div className="text-sm">Price: ₹{course?.price}</div>
+              <div className="text-sm">
+                Validity:{course?.validity ? 'course.validity' : ' Lifetime'}
+              </div>
+              <div className="">
+                Last updated at:{' '}
+                {course?.updated_at
+                  ? new Date(course.updated_at).toLocaleString(
+                      'en-IN',
+                      dateOptions,
+                    )
+                  : null}
+              </div>
+            </div>
           </div>
         </div>
 
