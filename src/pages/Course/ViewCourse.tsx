@@ -16,6 +16,7 @@ import Loader from '../../common/Loader';
 import CreateLecture from '../Lectures/CreateLecture';
 import UpdateLecture from '../Lectures/UpdateLecture';
 import DeleteLecture from '../Lectures/DeleteLecture';
+import DeletModule from '../Modules/DeleteModule';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -123,7 +124,7 @@ const ViewCourse: React.FC = () => {
                     </div>
                   )}
                   <div className="pl-2 w-full text-xl ">
-                    <span className="flex items-center gap-3 ">
+                    <span className="flex items-center gap-3 text-2xl ">
                       {modules.name}
                       <div className="flex items-center space-x-3.5">
                         {/* Update Module */}
@@ -133,6 +134,10 @@ const ViewCourse: React.FC = () => {
                           name={modules.name}
                           image_path={modules.image_path}
                           refreshPage={refreshPage}
+                        />
+                        <DeletModule
+                          moduleId={modules.id}
+                          refresh={refreshPage}
                         />
                       </div>
                     </span>
