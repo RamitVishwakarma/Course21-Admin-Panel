@@ -12,7 +12,13 @@ import {
 import { PlusCircleIcon } from '@heroicons/react/20/solid';
 import { useToast } from '@/components/ui/use-toast';
 
-export default function CreateModule({ courseId }: { courseId: number }) {
+export default function CreateModule({
+  courseId,
+  refreshPage,
+}: {
+  courseId: number;
+  refreshPage: () => void;
+}) {
   interface FormData {
     name: string;
     image: File | string;
@@ -49,6 +55,7 @@ export default function CreateModule({ courseId }: { courseId: number }) {
         toast({
           title: 'Module Added Successfully',
         });
+        refreshPage();
         // alert('Module Added Successfully');
       })
       .catch((err) => {
