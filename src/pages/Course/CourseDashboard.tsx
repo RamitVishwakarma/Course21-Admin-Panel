@@ -1,13 +1,13 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import DefaultLayout from '../../layout/DefaultLayout';
 import { EyeIcon } from '@heroicons/react/20/solid';
+import { Course } from '../../interfaces/Course';
+import DefaultLayout from '../../layout/DefaultLayout';
 import DeleteCourse from './DeleteCourse';
 import CreateCourse from './CreateCourse';
 import UpdateCourse from './UpdateCourse';
-import { Course } from '../../interfaces/Course';
+import axios from 'axios';
 
 const AllCourses: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
