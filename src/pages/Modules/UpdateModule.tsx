@@ -79,7 +79,7 @@ export default function UpdateModule({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <PencilIcon className="h-4 w-4 cursor-pointer hover:text-primary" />
+        <PencilIcon className="h-5 w-5 cursor-pointer hover:text-primary" />
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>Update Module</DialogTitle>
