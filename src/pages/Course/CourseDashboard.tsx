@@ -8,9 +8,11 @@ import DeleteCourse from './DeleteCourse';
 import CreateCourse from './CreateCourse';
 import UpdateCourse from './UpdateCourse';
 import axios from 'axios';
+import Loader from '../../common/Loader';
 
 const AllCourses: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   //refresh page logic
   const [refresh, setRefresh] = useState(false);
   const refreshPage = () => {
@@ -22,6 +24,7 @@ const AllCourses: React.FC = () => {
       .then((res) => {
         console.log(res.data.data);
         setCourses(res.data.data);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
@@ -38,7 +41,9 @@ const AllCourses: React.FC = () => {
     timeZone: 'Asia/Kolkata',
   };
 
-  return (
+  return loading ? (
+    <Loader />
+  ) : (
     <DefaultLayout>
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">
