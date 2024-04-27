@@ -15,6 +15,7 @@ import CreateModule from '../Modules/CreateModule';
 import UpdateModule from '../Modules/UpdateModule';
 import { Course } from '../../interfaces/Course';
 import Loader from '../../common/Loader';
+import CreateLecture from '../Lectures/CreateLecture';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -91,7 +92,7 @@ const ViewCourse: React.FC = () => {
         </div>
 
         <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-strokedark md:px-6 2xl:px-7.5">
-          <div className=" flex items-center justify-between">
+          <div className="flex text-xl items-center justify-between">
             <p className="font-medium text-2xl">Modules</p>
             <CreateModule courseId={Number(id)} refreshPage={refreshPage} />
           </div>
@@ -140,6 +141,12 @@ const ViewCourse: React.FC = () => {
               </AccordionTrigger>
 
               <AccordionContent>
+                <div className="p-2 text-lg text-end">
+                  <CreateLecture
+                    moduleId={modules.id}
+                    refreshPage={refreshPage}
+                  />
+                </div>
                 <table className="w-full table-auto">
                   <thead>
                     <tr className="bg-gray-2 text-left dark:bg-meta-4">
