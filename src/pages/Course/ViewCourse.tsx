@@ -14,10 +14,12 @@ import { Link } from 'react-router-dom';
 import CreateModule from '../Modules/CreateModule';
 import UpdateModule from '../Modules/UpdateModule';
 import { Course } from '../../interfaces/Course';
+import Loader from '../../common/Loader';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
   const [course, setCourse] = useState<Course>();
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     axios
@@ -25,6 +27,7 @@ const ViewCourse: React.FC = () => {
       .then((res) => {
         console.log(res.data);
         setCourse(res.data.data);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
@@ -41,7 +44,9 @@ const ViewCourse: React.FC = () => {
     timeZone: 'Asia/Kolkata',
   };
 
-  return (
+  return loading ? (
+    <Loader />
+  ) : (
     <DefaultLayout>
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="py-6 px-4 md:px-6 xl:px-7.5">

@@ -83,9 +83,9 @@ function App() {
               </>
             }
           />
-          {/* Module Section */}
-          <Route path="create-module/:id" element={<CreateModule />} />
-          <Route path="update-module/:id" element={<UpdateModule />} />
+          {/* Module Section */}z{' '}
+          {/* <Route path="create-module/:id" element={<CreateModule />} /> */}
+          {/* <Route path="update-module/:id" element={<UpdateModule />} /> */}
         </Route>
 
         <Route
