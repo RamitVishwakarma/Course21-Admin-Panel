@@ -4,11 +4,11 @@ import { Fragment, useState } from 'react';
 import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
 
-export default function DeleteCourse({
-  courseId,
+export default function DeletLecture({
+  lectureId,
   refresh,
 }: {
-  courseId: number;
+  lectureId: number;
   refresh: () => void;
 }) {
   let [isOpen, setIsOpen] = useState(false);
@@ -17,26 +17,24 @@ export default function DeleteCourse({
   function closeModal() {
     setIsOpen(false);
   }
-
   function openModal() {
     setIsOpen(true);
   }
 
-  const deleteCourse = () => {
-    // console.log(courseId);
+  const deleteLecture = () => {
     axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}courses/${courseId}`)
+      .delete(`${import.meta.env.VITE_BACKEND_URL}lectures/${lectureId}`)
       .then((res) => {
         console.log(res);
         toast({
-          title: 'Course deleted successfully',
+          title: 'Lecture deleted successfully',
         });
         refresh();
         closeModal();
       })
       .catch((err) => {
         toast({
-          title: 'Course deletion failed',
+          title: 'Lecture deletion failed',
           variant: 'destructive',
         });
         console.log(err);
@@ -51,7 +49,7 @@ export default function DeleteCourse({
           onClick={openModal}
           className="hover:text-primary"
         >
-          <TrashIcon className="h-5 w-5" />
+          <TrashIcon className="h-4 w-4" />
         </button>
       </div>
 
@@ -85,17 +83,17 @@ export default function DeleteCourse({
                     as="h3"
                     className="text-lg font-medium leading-6 dark:text-white"
                   >
-                    Delete Course?
+                    Delete Lecture?
                   </Dialog.Title>
                   <div className="mt-2">
                     <p className="text-sm bg-opacity-10">
-                      Do you really want to delete this course?
+                      Do you really want to delete this Lecture?
                     </p>
                   </div>
 
                   <div className="mt-4">
                     <button
-                      onClick={deleteCourse}
+                      onClick={deleteLecture}
                       className="inline-flex items-center justify-center rounded-md bg-primary py-2 px-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-2 xl:px-6"
                     >
                       Delete

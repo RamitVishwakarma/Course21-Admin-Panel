@@ -15,6 +15,7 @@ import { Course } from '../../interfaces/Course';
 import Loader from '../../common/Loader';
 import CreateLecture from '../Lectures/CreateLecture';
 import UpdateLecture from '../Lectures/UpdateLecture';
+import DeleteLecture from '../Lectures/DeleteLecture';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -217,6 +218,10 @@ const ViewCourse: React.FC = () => {
                               name={lecture.name}
                               image_path={lecture.image_path}
                               refreshPage={refreshPage}
+                            />
+                            <DeleteLecture
+                              lectureId={lecture.id}
+                              refresh={refreshPage}
                             />
                           </div>
                         </td>
