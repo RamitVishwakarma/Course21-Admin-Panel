@@ -171,9 +171,21 @@ const ViewCourse: React.FC = () => {
                     {modules.lectures.map((lecture, key) => (
                       <tr key={key}>
                         <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                          <h5 className="font-medium text-black dark:text-white ">
-                            {lecture.name}
-                          </h5>
+                          <div className="flex gap-4 items-center ">
+                            {lecture.image_path ? (
+                              <img
+                                className="h-12.5 w-15 rounded-md"
+                                src={`${
+                                  import.meta.env.VITE_BACKEND_STORAGE_URL
+                                }${lecture.image_path}`}
+                              />
+                            ) : null}
+                            <div>
+                              <h5 className="font-medium text-black dark:text-white ">
+                                {lecture.name}
+                              </h5>
+                            </div>
+                          </div>
                         </td>
                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                           <p className="text-black dark:text-white text-start">

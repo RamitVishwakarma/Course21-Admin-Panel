@@ -6,6 +6,7 @@ export interface Lectures {
   name: string;
   file_id: number;
   is_trial: boolean;
+  image_path: string;
   created_at: Date;
   updated_at: Date;
 }

@@ -75,7 +75,7 @@ const AllCourses: React.FC = () => {
               {courses.map((course) => (
                 <tr key={course.id}>
                   <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 items-center">
                       {course.image_path ? (
                         <img
                           className="h-12.5 w-15 rounded-md"
