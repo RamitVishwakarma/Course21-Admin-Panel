@@ -70,6 +70,7 @@ export default function UpdateCourse({
         console.log(err);
         toast({
           title: 'Update Failed',
+          variant: 'destructive',
         });
         // alert('Update Failed');
       });

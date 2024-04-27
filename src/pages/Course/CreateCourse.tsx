@@ -62,6 +62,7 @@ export default function CreateCourse({
         console.log(err);
         toast({
           title: 'Course Addition Failed',
+          variant: 'destructive',
         });
         // alert('Course Addition Failed');
       });

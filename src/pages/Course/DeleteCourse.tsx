@@ -37,6 +37,7 @@ export default function DeleteCourse({
       .catch((err) => {
         toast({
           title: 'Course deletion failed',
+          variant: 'destructive',
         });
         console.log(err);
       });
