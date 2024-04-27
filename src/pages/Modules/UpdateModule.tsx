@@ -13,22 +13,28 @@ import { useToast } from '@/components/ui/use-toast';
 
 export default function UpdateModule({
   courseId,
+  moduleId,
   name,
   image_path,
+  refreshPage,
 }: {
   courseId: number;
+  moduleId: number;
   name: string;
   image_path: string;
+  refreshPage: () => void;
 }) {
   const { toast } = useToast();
   interface FormData {
     name: string;
     featured_image: File | string;
+    course_id: number;
   }
 
   const [data, setData] = useState<FormData>({
     name: name ? name : '',
     featured_image: image_path ? image_path : new File([''], ''),
+    course_id: courseId,
   });
 
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +50,7 @@ export default function UpdateModule({
     console.log(data);
     axios
       .post(
-        `${import.meta.env.VITE_BACKEND_URL}modules/update/${courseId}`,
+        `${import.meta.env.VITE_BACKEND_URL}modules/update/${moduleId}`,
         data,
         {
           headers: {
@@ -57,12 +63,14 @@ export default function UpdateModule({
         toast({
           title: 'Module Updated Successfully',
         });
+        refreshPage();
         // alert('Module Updated Successfully');
       })
       .catch((err) => {
         console.log(err);
         toast({
           title: 'Module Update Failed',
+          variant: 'destructive',
         });
         // alert('Module Update Failed');
       });

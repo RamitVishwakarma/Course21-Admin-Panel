@@ -61,7 +61,7 @@ const ViewCourse: React.FC = () => {
                 <img
                   src={course?.image_path}
                   alt="course"
-                  className="w-40 h-40 rounded-md objet-cover"
+                  className="w-40 h-40 rounded-lg objet-cover"
                 />
               ) : (
                 <div className="w-40 h-40 bg-gray-2 dark:bg-black text-white text-center flex items-center rounded-md">
@@ -75,7 +75,7 @@ const ViewCourse: React.FC = () => {
               </h4>
               <div className="text-sm">Price: ₹{course?.price}</div>
               <div className="text-sm">
-                Validity:{course?.validity ? 'course.validity' : 'Not Set'}
+                Validity:{course?.validity ? 'course.validity' : ' Not Set'}
               </div>
               <div className="">
                 Last updated at:{' '}
@@ -93,7 +93,6 @@ const ViewCourse: React.FC = () => {
         <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-strokedark md:px-6 2xl:px-7.5">
           <div className=" flex items-center justify-between">
             <p className="font-medium text-2xl">Modules</p>
-            {/* // ? Need refresh here */}
             <CreateModule courseId={Number(id)} refreshPage={refreshPage} />
           </div>
         </div>
@@ -107,28 +106,39 @@ const ViewCourse: React.FC = () => {
           >
             <AccordionItem value={`item-${key}`}>
               <AccordionTrigger>
-                <span className="flex items-center gap-3">{modules.name}</span>
+                <div className="flex gap-4 items-center p-4">
+                  {modules.image_path ? (
+                    <img
+                      src={`${import.meta.env.VITE_BACKEND_STORAGE_URL}${
+                        modules.image_path
+                      }`}
+                      className="w-30 h-30 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div>
+                      <div className="w-30 h-30 bg-gray dark:bg-black text-black dark:text-white p-2 rounded-lg">
+                        No image added update image in module edit
+                      </div>
+                    </div>
+                  )}
+                  <div className="pl-2 w-full text-xl ">
+                    <span className="flex items-center gap-3 ">
+                      {modules.name}
+                      <div className="flex items-center space-x-3.5">
+                        {/* Update Module */}
+                        <UpdateModule
+                          courseId={Number(id)}
+                          moduleId={modules.id}
+                          name={modules.name}
+                          image_path={modules.image_path}
+                          refreshPage={refreshPage}
+                        />
+                      </div>
+                    </span>
+                  </div>
+                </div>
               </AccordionTrigger>
 
-              {modules.image_path ? (
-                <img
-                  src={modules.image_path}
-                  alt="module"
-                  className="w-40 h-40 rounded-md objet-cover"
-                />
-              ) : (
-                <div className="w-40 h-40 bg-gray-2 dark:bg-black text-white text-center flex items-center rounded-md">
-                  No image added update image in module edit
-                </div>
-              )}
-              <div className="flex items-center space-x-3.5">
-                {/* Update Module */}
-                <UpdateModule
-                  courseId={Number(id)}
-                  name={modules.name}
-                  image_path={modules.image_path}
-                />
-              </div>
               <AccordionContent>
                 <table className="w-full table-auto">
                   <thead>
