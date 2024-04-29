@@ -69,9 +69,9 @@ export default function CreateModule({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className=" inline-flex items-center justify-center gap-2.5 rounded-full bg-black py-2 px-6 text-center font-medium text-white hover:bg-opacity-80 lg:px-4 xl:px-6">
+        <button className=" inline-flex items-center justify-center gap-2.5 rounded-full bg-meta-3 py-4 px-6 text-center font-medium text-white hover:bg-opacity-80 lg:px-4 xl:px-6">
           <PlusCircleIcon className="h-5 w-5" />
-          <span>Add Modules</span>
+          <span>Create New</span>
         </button>
       </DialogTrigger>
       <DialogContent>

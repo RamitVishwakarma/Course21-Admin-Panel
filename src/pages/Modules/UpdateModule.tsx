@@ -79,7 +79,10 @@ export default function UpdateModule({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <PencilIcon className="h-5 w-5 cursor-pointer hover:text-primary" />
+        <button className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full bg-primary py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6">
+          <PencilIcon className="h-4 w-4" />
+          Edit
+        </button>
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>Update Module</DialogTitle>

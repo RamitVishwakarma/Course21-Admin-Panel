@@ -55,9 +55,9 @@ const ViewCourse: React.FC = () => {
     <Loader />
   ) : (
     <DefaultLayout>
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark pb-4">
         <div className="py-6 px-4 md:px-6 xl:px-7.5">
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4 items-center ">
             <div>
               {course?.image_path ? (
                 <img
@@ -92,58 +92,66 @@ const ViewCourse: React.FC = () => {
           </div>
         </div>
 
-        <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-strokedark md:px-6 2xl:px-7.5">
+        <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-stroke/20 md:px-6 2xl:px-7.5">
           <div className="flex text-xl items-center justify-between">
-            <p className="font-medium text-2xl">Modules</p>
+            <p className="font-medium text-3xl">Modules</p>
             <CreateModule courseId={Number(id)} refreshPage={refreshPage} />
           </div>
         </div>
 
         {course?.modules.map((modules, key) => (
           <Accordion
-            className="py-2 px-4 md:px-6 2xl:px-7.5"
+            className={`py-2 px-4 md:px-6 2xl:px-7.5 ${
+              key % 2 == 0 ? 'bg-gray-2 dark:bg-meta-4' : ''
+            } `}
             key={key}
             type="single"
             collapsible
           >
             <AccordionItem value={`item-${key}`}>
-              <AccordionTrigger>
-                <div className="flex gap-4 items-center p-4">
-                  {modules.image_path ? (
-                    <img
-                      src={`${import.meta.env.VITE_BACKEND_STORAGE_URL}${
-                        modules.image_path
-                      }`}
-                      className="w-30 h-30 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div>
-                      <div className="w-30 h-30 bg-gray dark:bg-black text-black dark:text-white p-2 rounded-lg">
-                        No image added update image in module edit
+              <div className="flex gap-4 items-center p-4 ">
+                {modules.image_path ? (
+                  <img
+                    src={`${import.meta.env.VITE_BACKEND_STORAGE_URL}${
+                      modules.image_path
+                    }`}
+                    className="w-30 h-30 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div>
+                    <div className="w-30 h-30 bg-gray dark:bg-black text-black dark:text-white p-2 rounded-lg">
+                      No image added update image in module edit
+                    </div>
+                  </div>
+                )}
+                <div className="pl-2 w-full text-xl">
+                  <div className="flex justify-between gap-3 text-2xl ">
+                    <div className=" flex flex-col">
+                      <div className="font-medium text-2xl -px">
+                        {modules.name}
+                      </div>
+                      <div className="text-sm w-24">
+                        <AccordionTrigger>Show More</AccordionTrigger>
                       </div>
                     </div>
-                  )}
-                  <div className="pl-2 w-full text-xl ">
-                    <span className="flex items-center gap-3 text-2xl ">
-                      {modules.name}
-                      <div className="flex items-center space-x-3.5">
-                        {/* Update Module */}
-                        <UpdateModule
-                          courseId={Number(id)}
-                          moduleId={modules.id}
-                          name={modules.name}
-                          image_path={modules.image_path}
-                          refreshPage={refreshPage}
-                        />
-                        <DeletModule
-                          moduleId={modules.id}
-                          refresh={refreshPage}
-                        />
-                      </div>
-                    </span>
+                    <div className="flex items-center space-x-3.5 -mt-20">
+                      {/* Update Module */}
+                      <UpdateModule
+                        courseId={Number(id)}
+                        moduleId={modules.id}
+                        name={modules.name}
+                        image_path={modules.image_path}
+                        refreshPage={refreshPage}
+                      />
+                      <DeletModule
+                        moduleId={modules.id}
+                        refresh={refreshPage}
+                      />
+                    </div>
                   </div>
                 </div>
-              </AccordionTrigger>
+              </div>
+
               <AccordionContent>
                 <div className="p-2 text-lg text-end">
                   <CreateLecture
@@ -151,9 +159,15 @@ const ViewCourse: React.FC = () => {
                     refreshPage={refreshPage}
                   />
                 </div>
-                <table className="w-full table-auto">
+                <table className="w-full table-auto ">
                   <thead>
-                    <tr className="bg-gray-2 text-left dark:bg-meta-4">
+                    <tr
+                      className={`${
+                        key % 2 == 0
+                          ? 'bg-gray-2 dark:bg-boxdark'
+                          : 'bg-success dark:bg-meta-4'
+                      } text-left text-2xl  `}
+                    >
                       <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
                         Lectures
                       </th>
@@ -171,7 +185,13 @@ const ViewCourse: React.FC = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody
+                    className={`[&>*:nth-child(even)]:bg-gray-2 dark:[&>*:nth-child(even)]:bg-boxdark ${
+                      key % 2 == 0
+                        ? ''
+                        : 'dark:[&>*:nth-child(even)]:bg-meta-4 '
+                    }`}
+                  >
                     {modules.lectures.map((lecture, key) => (
                       <tr key={key}>
                         <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
@@ -209,12 +229,12 @@ const ViewCourse: React.FC = () => {
                         </td>
                         <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark ">
                           <p
-                            className={`inline-flex rounded-full bg-opacity-10 py-1  text-sm font-medium text-start `}
+                            className={`inline-flex rounded-full bg-opacity-10 py-1 px-2 text-sm font-medium text-start `}
                           >
                             {lecture.is_trial ? 'Trial' : 'Paid'}
                           </p>
                         </td>
-                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                        <td className="border-b border-[#eee] py-5 px-6 dark:border-strokedark">
                           <div className="flex items-center space-x-3.5">
                             <UpdateLecture
                               lectureId={lecture.id}
