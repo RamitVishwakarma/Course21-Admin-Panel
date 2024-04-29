@@ -70,9 +70,9 @@ export default function CreateCourse({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="m-2 inline-flex items-center justify-center gap-2.5 rounded-full bg-black py-4 px-10 text-center font-medium text-white hover:bg-opacity-80 lg:px-8 xl:px-10">
+        <button className="m-2 inline-flex items-center justify-center gap-2.5 rounded-lg bg-success py-4 px-6 text-center font-medium text-white hover:bg-opacity-80 lg:px-6 xl:px-8">
           <PlusCircleIcon className="h-5 w-5" />
-          Create Course
+          Create New
         </button>
       </DialogTrigger>
       <DialogContent>

@@ -24,6 +24,7 @@ import {
   UpdateModule,
 } from './utils/Lazyloading';
 import { Toaster } from './components/ui/toaster';
+import { LeafIcon } from 'lucide-react';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -60,7 +61,6 @@ function App() {
             </>
           }
         />
-
         <Route path="/admin/" element={<ProtectedRoute />}>
           {/* Course Section */}
           {/* <Route path="create-course" element={<CreateCourse />} /> */}
