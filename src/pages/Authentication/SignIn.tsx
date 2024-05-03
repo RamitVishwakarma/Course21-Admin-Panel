@@ -6,8 +6,10 @@ import axios from 'axios';
 import { useState } from 'react';
 import { KeyIcon, UserIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/components/ui/use-toast';
 
 const SignIn: React.FC = () => {
+  const { toast } = useToast();
   const navigate = useNavigate();
   interface FormData {
     email_or_username: string;
@@ -40,7 +42,11 @@ const SignIn: React.FC = () => {
       })
       .catch((err) => {
         console.log(err);
-        alert('Login Failed');
+        // alert('Login Failed');
+        toast({
+          title: 'Login Failed',
+          variant: 'destructive',
+        });
       });
   };
 

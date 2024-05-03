@@ -6,8 +6,10 @@ import Logo from '../../images/logo/logo.svg';
 import axios from 'axios';
 import { useState } from 'react';
 import { UserIcon, AtSymbolIcon, KeyIcon } from '@heroicons/react/24/solid';
+import { useToast } from '@/components/ui/use-toast';
 
 const SignUp: React.FC = () => {
+  const { toast } = useToast();
   interface FormData {
     username: string;
     password: string;
@@ -34,11 +36,15 @@ const SignUp: React.FC = () => {
       })
       .then((res) => {
         console.log(res);
-        alert('User registered successfully');
+        toast({
+          title: 'User registered successfully',
+        });
       })
       .catch((err) => {
         console.log(err);
-        alert('User registration failed');
+        toast({
+          title: 'User registration failed',
+        });
       });
   };
   return (
