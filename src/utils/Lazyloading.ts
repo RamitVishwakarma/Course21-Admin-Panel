@@ -12,7 +12,9 @@ export const ProtectedRoute = loadable(() => import('./ProtectedRoute'));
 export const CourseDashboard = loadable(
   () => import('../pages/Course/CourseDashboard'),
 );
-export const ViewCourse = loadable(() => import('../pages/Course/ViewCourse'));
+export const ViewCourse = loadable(
+  () => import('../pages/Course/ViewCourse/ViewCourse'),
+);
 
 export const CreateModule = loadable(
   () => import('../pages/Modules/CreateModule'),
