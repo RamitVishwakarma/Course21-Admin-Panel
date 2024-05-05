@@ -47,19 +47,12 @@ export default function DeletModule({
         <button
           type="button"
           onClick={openModal}
-          className="hover:text-primary"
+          className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full bg-meta-1 py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6"
         >
-          <button
-            type="button"
-            onClick={openModal}
-            className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full bg-meta-1 py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6"
-          >
-            <TrashIcon className="h-4 w-4 cursor-pointer" />
-            Delete
-          </button>
+          <TrashIcon className="h-4 w-4 cursor-pointer" />
+          Delete
         </button>
       </div>
-
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeModal}>
           <Transition.Child
