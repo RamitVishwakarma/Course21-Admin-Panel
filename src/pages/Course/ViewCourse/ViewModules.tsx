@@ -9,75 +9,124 @@ import UpdateModule from '../../Modules/UpdateModule';
 import DeletModule from '../../Modules/DeleteModule';
 import CreateLecture from '../../Lectures/CreateLecture';
 import ViewLectures from './ViewLectures';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Bars4Icon } from '@heroicons/react/24/solid';
+import { useState } from 'react';
 
 const ViewModules = ({
-  modules,
-  key,
+  module,
+  index,
   refreshPage,
   courseId,
 }: {
-  modules: Modules;
-  key: number;
+  module: Modules;
+  index: number;
   refreshPage: () => void;
   courseId: number;
 }) => {
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: module.id,
+    data: {
+      type: 'module',
+      module,
+    },
+  });
+  const style = {
+    transition,
+    transform: CSS.Transform.toString(transform),
+  };
+
+  const [mouseHover, setMouseHover] = useState(false);
+
+  if (isDragging) {
+    return (
+      <Accordion
+        ref={setNodeRef}
+        style={style}
+        className={`opacity-40 py-2 px-4 md:px-6 2xl:px-7.5 ring-2 ring-bodydark dark:ring-white rounded-md bg-gray-2 dark:bg-meta-4 `}
+        key={index}
+        type="single"
+        collapsible
+      >
+        <AccordionItem {...attributes} {...listeners} value={`item-${index}`}>
+          <div className="flex gap-4 items-center p-4 ">
+            <div className="w-30 h-30 rounded-lg object-cover"></div>
+          </div>
+        </AccordionItem>
+      </Accordion>
+    );
+  }
+
   return (
     <Accordion
-      className={`py-2 px-4 md:px-6 2xl:px-7.5 ${
-        key % 2 == 0 ? 'bg-gray-2 dark:bg-meta-4' : ''
-      } `}
-      key={key}
+      ref={setNodeRef}
+      style={style}
+      className={`py-2 px-4 md:px-6 2xl:px-7.5 rounded-md hover:ring-2 hover:dark:ring-white hover:ring-bodydark bg-gray-2 dark:bg-meta-4 `}
+      key={index}
       type="single"
       collapsible
+      onMouseEnter={() => setMouseHover(true)}
+      onMouseLeave={() => setMouseHover(false)}
     >
-      <AccordionItem value={`item-${key}`}>
+      <AccordionItem {...attributes} {...listeners} value={`item-${index}`}>
         <div className="flex gap-4 items-center p-4 ">
-          {modules.image_path ? (
+          {mouseHover && <Bars4Icon className="h-9 w-9  cursor-grab" />}
+          {module.image_path ? (
             <img
               src={`${import.meta.env.VITE_BACKEND_STORAGE_URL}${
-                modules.image_path
+                module.image_path
               }`}
-              className="w-30 h-30 rounded-lg object-cover"
+              className="w-30 h-30 rounded-lg object-cover "
             />
           ) : (
             <div>
-              <div className="w-30 h-30 bg-gray dark:bg-black text-black dark:text-white p-2 rounded-lg">
-                No image added update image in module edit
+              <div className="w-30 h-30 bg-gray dark:bg-black text-black dark:text-white p-2 rounded-lg text-center">
+                No Image
               </div>
             </div>
           )}
           <div className="pl-2 w-full text-xl">
             <div className="flex justify-between gap-3 text-2xl ">
               <div className=" flex flex-col">
-                <div className="font-medium text-2xl -px">{modules.name}</div>
+                <div className="font-medium text-2xl -px ">{module.name}</div>
                 <div className="text-sm w-24">
                   <AccordionTrigger>Show More</AccordionTrigger>
                 </div>
               </div>
-              <div className="flex items-center space-x-3.5 -mt-20">
-                {/* Update Module */}
-                <UpdateModule
-                  courseId={courseId}
-                  moduleId={modules.id}
-                  name={modules.name}
-                  image_path={modules.image_path}
-                  refreshPage={refreshPage}
-                />
-                <DeletModule moduleId={modules.id} refresh={refreshPage} />
-              </div>
+              {mouseHover && (
+                <div className="flex items-center space-x-3.5 -mt-20">
+                  {/* Update Module */}
+                  <UpdateModule
+                    courseId={courseId}
+                    moduleId={module.id}
+                    name={module.name}
+                    image_path={module.image_path}
+                    refreshPage={refreshPage}
+                  />
+                  <DeletModule moduleId={module.id} refresh={refreshPage} />
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         <AccordionContent>
           <div className="p-2 text-lg text-end">
-            <CreateLecture moduleId={modules.id} refreshPage={refreshPage} />
+            <CreateLecture moduleId={module.id} refreshPage={refreshPage} />
           </div>
           <table className="w-full table-auto ">
             <thead>
               <tr
                 className={`${
-                  key % 2 == 0
+                  index % 2 == 0
                     ? 'bg-gray-2 dark:bg-boxdark'
                     : 'bg-success dark:bg-meta-4'
                 } text-left text-2xl  `}
@@ -101,15 +150,16 @@ const ViewModules = ({
             </thead>
             <tbody
               className={`[&>*:nth-child(even)]:bg-gray-2 dark:[&>*:nth-child(even)]:bg-boxdark ${
-                key % 2 == 0 ? '' : 'dark:[&>*:nth-child(even)]:bg-meta-4 '
+                index % 2 == 0 ? '' : 'dark:[&>*:nth-child(even)]:bg-meta-4 '
               }`}
             >
-              {modules.lectures.map((lecture, key) => (
+              {module.lectures.map((lecture, index) => (
                 <ViewLectures
+                  key={index} // this is just for show
                   lecture={lecture}
-                  key={key}
+                  index={index}
                   refreshPage={refreshPage}
-                  moduleId={modules.id}
+                  moduleId={module.id}
                   courseId={courseId}
                 />
               ))}

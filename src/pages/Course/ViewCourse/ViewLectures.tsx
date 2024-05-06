@@ -4,13 +4,13 @@ import { Lectures } from '@/interfaces/Lectures';
 
 const ViewLectures = ({
   lecture,
-  key,
+  index,
   refreshPage,
   moduleId,
   courseId,
 }: {
   lecture: Lectures;
-  key: number;
+  index: number;
   refreshPage: () => void;
   moduleId: number;
   courseId: number;
@@ -26,7 +26,7 @@ const ViewLectures = ({
     timeZone: 'Asia/Kolkata',
   };
   return (
-    <tr key={key}>
+    <tr key={index}>
       <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
         <div className="flex gap-4 items-center ">
           {lecture.image_path ? (
