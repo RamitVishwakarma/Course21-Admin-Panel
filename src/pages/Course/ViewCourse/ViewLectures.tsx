@@ -1,6 +1,8 @@
 import UpdateLecture from '../../Lectures/UpdateLecture';
 import DeleteLecture from '../../Lectures/DeleteLecture';
 import { Lectures } from '@/interfaces/Lectures';
+import { Bars4Icon } from '@heroicons/react/24/solid';
+import { useState } from 'react';
 
 const ViewLectures = ({
   lecture,
@@ -15,7 +17,6 @@ const ViewLectures = ({
   moduleId: number;
   courseId: number;
 }) => {
-  //Date options for date formatting
   const dateOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: '2-digit',
@@ -25,10 +26,18 @@ const ViewLectures = ({
     hour12: true,
     timeZone: 'Asia/Kolkata',
   };
+
+  const [mouseHover, setMouseHover] = useState(false);
   return (
-    <tr key={index}>
-      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+    <tr
+      onMouseEnter={() => setMouseHover(true)}
+      onMouseLeave={() => setMouseHover(false)}
+      className="bg-boxdark"
+      key={index}
+    >
+      <td className=" border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
         <div className="flex gap-4 items-center ">
+          {mouseHover && <Bars4Icon className="h-6 w-6 cursor-grab -ml-8" />}
           {lecture.image_path ? (
             <img
               className="h-12.5 w-15 rounded-md"

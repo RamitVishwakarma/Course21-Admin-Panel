@@ -1,16 +1,6 @@
-import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import DefaultLayout from '../../../layout/DefaultLayout';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { useState, useEffect } from 'react';
-
-import CreateModule from '../../Modules/CreateModule';
-import { Course } from '../../../interfaces/Course';
-import Loader from '../../../common/Loader';
-
-import CourseContainer from './CourseContainer';
-import ViewModules from './ViewModules';
-
 import {
   DndContext,
   DragEndEvent,
@@ -22,7 +12,13 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { Modules } from '@/interfaces/Modules';
+import { Course } from '../../../interfaces/Course';
 import { createPortal } from 'react-dom';
+import CourseContainer from './CourseContainer';
+import ViewModules from './ViewModules';
+import DefaultLayout from '../../../layout/DefaultLayout';
+import CreateModule from '../../Modules/CreateModule';
+import Loader from '../../../common/Loader';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -82,9 +78,8 @@ const ViewCourse: React.FC = () => {
         >
           <SortableContext items={moduleId}>
             {modules.map((module, index) => (
-              <div className="m-4">
+              <div key={index} className="m-4">
                 <ViewModules
-                  key={index} // just for show
                   module={module}
                   index={module.id}
                   refreshPage={refreshPage}

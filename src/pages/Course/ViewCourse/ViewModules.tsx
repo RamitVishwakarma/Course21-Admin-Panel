@@ -73,11 +73,13 @@ const ViewModules = ({
       key={index}
       type="single"
       collapsible
-      onMouseEnter={() => setMouseHover(true)}
-      onMouseLeave={() => setMouseHover(false)}
     >
       <AccordionItem {...attributes} {...listeners} value={`item-${index}`}>
-        <div className="flex gap-4 items-center p-4 ">
+        <div
+          onMouseEnter={() => setMouseHover(true)}
+          onMouseLeave={() => setMouseHover(false)}
+          className="flex gap-4 items-center p-4 "
+        >
           {mouseHover && <Bars4Icon className="h-9 w-9  cursor-grab" />}
           {module.image_path ? (
             <img
@@ -88,7 +90,7 @@ const ViewModules = ({
             />
           ) : (
             <div>
-              <div className="w-30 h-30 bg-gray dark:bg-black text-black dark:text-white p-2 rounded-lg text-center">
+              <div className="w-30 h-30 bg-gray dark:bg-boxdark text-black dark:text-white p-2 rounded-lg text-center">
                 No Image
               </div>
             </div>
@@ -122,15 +124,9 @@ const ViewModules = ({
           <div className="p-2 text-lg text-end">
             <CreateLecture moduleId={module.id} refreshPage={refreshPage} />
           </div>
-          <table className="w-full table-auto ">
-            <thead>
-              <tr
-                className={`${
-                  index % 2 == 0
-                    ? 'bg-gray-2 dark:bg-boxdark'
-                    : 'bg-success dark:bg-meta-4'
-                } text-left text-2xl  `}
-              >
+          <table className="w-full table-auto bg-white dark:bg-black">
+            <thead className="border-b border-meta-4">
+              <tr className="text-left text-2xl">
                 <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
                   Lectures
                 </th>
@@ -148,11 +144,7 @@ const ViewModules = ({
                 </th>
               </tr>
             </thead>
-            <tbody
-              className={`[&>*:nth-child(even)]:bg-gray-2 dark:[&>*:nth-child(even)]:bg-boxdark ${
-                index % 2 == 0 ? '' : 'dark:[&>*:nth-child(even)]:bg-meta-4 '
-              }`}
-            >
+            <tbody>
               {module.lectures.map((lecture, index) => (
                 <ViewLectures
                   key={index} // this is just for show
