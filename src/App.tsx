@@ -20,11 +20,9 @@ import {
   ProtectedRoute,
   CourseDashboard,
   ViewCourse,
-  CreateModule,
-  UpdateModule,
+  ViewModule,
 } from './utils/Lazyloading';
 import { Toaster } from './components/ui/toaster';
-import { LeafIcon } from 'lucide-react';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -80,6 +78,15 @@ function App() {
               <>
                 <PageTitle title="Course | View " />
                 <ViewCourse />
+              </>
+            }
+          />
+          <Route
+            path="view-course/:id/view-module/:id"
+            element={
+              <>
+                <PageTitle title="Module | View " />
+                <ViewModule />
               </>
             }
           />

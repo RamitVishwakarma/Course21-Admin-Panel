@@ -16,9 +16,4 @@ export const ViewCourse = loadable(
   () => import('../pages/Course/ViewCourse/ViewCourse'),
 );
 
-export const CreateModule = loadable(
-  () => import('../pages/Modules/CreateModule'),
-);
-export const UpdateModule = loadable(
-  () => import('../pages/Modules/UpdateModule'),
-);
+export const ViewModule = loadable(() => import('../pages/Modules/ViewModule'));

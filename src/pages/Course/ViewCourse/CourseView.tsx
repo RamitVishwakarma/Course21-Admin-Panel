@@ -1,6 +1,6 @@
 import { Course } from '../../../interfaces/Course';
 
-const CourseContainer = ({ course }: { course: Course }) => {
+const CourseView = ({ course }: { course: Course }) => {
   const dateOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: '2-digit',
@@ -46,4 +46,4 @@ const CourseContainer = ({ course }: { course: Course }) => {
   );
 };
 
-export default CourseContainer;
+export default CourseView;

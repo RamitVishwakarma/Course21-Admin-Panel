@@ -1,20 +1,13 @@
 import { Modules } from '@/interfaces/Modules';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import UpdateModule from '../../Modules/UpdateModule';
 import DeletModule from '../../Modules/DeleteModule';
-import CreateLecture from '../../Lectures/CreateLecture';
-import ViewLectures from './ViewLectures';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Bars4Icon } from '@heroicons/react/24/solid';
+import { Bars4Icon, EyeIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const ViewModules = ({
+const ModuleView = ({
   module,
   index,
   refreshPage,
@@ -46,35 +39,33 @@ const ViewModules = ({
 
   const [mouseHover, setMouseHover] = useState(false);
 
+  const navigate = useNavigate();
+
   if (isDragging) {
     return (
-      <Accordion
+      <div
         ref={setNodeRef}
         style={style}
         className={`opacity-40 py-2 px-4 md:px-6 2xl:px-7.5 ring-2 ring-bodydark dark:ring-white rounded-md bg-gray-2 dark:bg-meta-4 `}
         key={index}
-        type="single"
-        collapsible
       >
-        <AccordionItem {...attributes} {...listeners} value={`item-${index}`}>
+        <div {...attributes} {...listeners}>
           <div className="flex gap-4 items-center p-4 ">
             <div className="w-30 h-30 rounded-lg object-cover"></div>
           </div>
-        </AccordionItem>
-      </Accordion>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Accordion
+    <div
       ref={setNodeRef}
       style={style}
       className={`py-2 px-4 md:px-6 2xl:px-7.5 rounded-md hover:ring-2 hover:dark:ring-white hover:ring-bodydark bg-gray-2 dark:bg-meta-4 `}
       key={index}
-      type="single"
-      collapsible
     >
-      <AccordionItem {...attributes} {...listeners} value={`item-${index}`}>
+      <div {...attributes} {...listeners}>
         <div
           onMouseEnter={() => setMouseHover(true)}
           onMouseLeave={() => setMouseHover(false)}
@@ -99,12 +90,24 @@ const ViewModules = ({
             <div className="flex justify-between gap-3 text-2xl ">
               <div className=" flex flex-col">
                 <div className="font-medium text-2xl -px ">{module.name}</div>
-                <div className="text-sm w-24">
-                  <AccordionTrigger>Show More</AccordionTrigger>
+                <div className="text-lg">
+                  <div>Total Lectures {module.lectures.length}</div>
                 </div>
               </div>
               {mouseHover && (
                 <div className="flex items-center space-x-3.5 -mt-20">
+                  {/* View */}
+                  <button
+                    onClick={() => {
+                      navigate(
+                        `/admin/view-course/${courseId}/view-module/${module.id}`,
+                      );
+                    }}
+                    className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full bg-meta-3 py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6"
+                  >
+                    <EyeIcon className="h-4 w-4" />
+                    View
+                  </button>
                   {/* Update Module */}
                   <UpdateModule
                     courseId={courseId}
@@ -119,48 +122,9 @@ const ViewModules = ({
             </div>
           </div>
         </div>
-
-        <AccordionContent>
-          <div className="p-2 text-lg text-end">
-            <CreateLecture moduleId={module.id} refreshPage={refreshPage} />
-          </div>
-          <table className="w-full table-auto bg-white dark:bg-black">
-            <thead className="border-b border-meta-4">
-              <tr className="text-left text-2xl">
-                <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                  Lectures
-                </th>
-                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                  Created At
-                </th>
-                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                  Updated At
-                </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                  Trial
-                </th>
-                <th className="py-4 px-4 font-medium text-black dark:text-white">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {module.lectures.map((lecture, index) => (
-                <ViewLectures
-                  key={index} // this is just for show
-                  lecture={lecture}
-                  index={index}
-                  refreshPage={refreshPage}
-                  moduleId={module.id}
-                  courseId={courseId}
-                />
-              ))}
-            </tbody>
-          </table>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+      </div>
+    </div>
   );
 };
 
-export default ViewModules;
+export default ModuleView;
