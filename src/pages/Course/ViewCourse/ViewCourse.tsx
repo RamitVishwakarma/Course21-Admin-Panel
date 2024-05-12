@@ -19,6 +19,7 @@ import ViewModules from './ViewModules';
 import DefaultLayout from '../../../layout/DefaultLayout';
 import CreateModule from '../../Modules/CreateModule';
 import Loader from '../../../common/Loader';
+import { useToast } from '@/components/ui/use-toast';
 
 const ViewCourse: React.FC = () => {
   const id = useParams().id;
@@ -26,6 +27,7 @@ const ViewCourse: React.FC = () => {
   const [modules, setModules] = useState<Modules[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refresh, setRefresh] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     axios
@@ -34,6 +36,7 @@ const ViewCourse: React.FC = () => {
         console.log(res.data);
         setCourse(res.data.data);
         setModules(res.data.data.modules);
+        console.log(res.data.data.modules);
         setLoading(false);
       })
       .catch((err) => {
@@ -52,10 +55,30 @@ const ViewCourse: React.FC = () => {
       },
     }),
   );
+
   // Getting an array of module ids
   const moduleId = useMemo(() => modules.map((module) => module.id), [modules]);
   // getting the active module while dragging also for overlay
   const [activeModule, setActiveModule] = useState<Modules | null>(null);
+
+  const updateModuleSequence = () => {
+    axios
+      .post(`${import.meta.env.VITE_BACKEND_URL}courses/update-sequence`, {
+        course_id: Number(id),
+        module_ids: moduleId,
+      })
+      .then((res) => {
+        toast({
+          title: res.data.message,
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: err.response.data.message,
+          variant: 'destructive',
+        });
+      });
+  };
 
   return loading ? (
     <Loader />
@@ -135,6 +158,7 @@ const ViewCourse: React.FC = () => {
       // console.log(activeModuleIndex, overModuleIndex);
       return arrayMove(module, activeModuleIndex, overModuleIndex);
     });
+    updateModuleSequence();
   }
 };
 
