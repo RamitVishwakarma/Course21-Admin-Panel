@@ -14,8 +14,8 @@ import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { Modules } from '@/interfaces/Modules';
 import { Course } from '../../../interfaces/Course';
 import { createPortal } from 'react-dom';
-import CourseView from './CourseView';
-import ModuleView from './ModuleView';
+import CourseCard from './CourseCard';
+import ModuleCard from './ModuleCard';
 import DefaultLayout from '../../../layout/DefaultLayout';
 import CreateModule from '../../Modules/CreateModule';
 import Loader from '../../../common/Loader';
@@ -85,7 +85,7 @@ const ViewCourse: React.FC = () => {
     <DefaultLayout>
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark pb-4">
         {/* Course Description */}
-        {course && <CourseView course={course} />}
+        {course && <CourseCard course={course} />}
         {/* Module Creation */}
         <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-stroke/20 md:px-6 2xl:px-7.5">
           <div className="flex text-xl items-center justify-between">
@@ -101,7 +101,7 @@ const ViewCourse: React.FC = () => {
           <SortableContext items={moduleId}>
             {modules.map((module, index) => (
               <div key={index} className="m-4">
-                <ModuleView
+                <ModuleCard
                   module={module}
                   index={module.id}
                   refreshPage={refreshPage}
@@ -114,7 +114,7 @@ const ViewCourse: React.FC = () => {
             <div className="text-bodydark">
               <DragOverlay>
                 {activeModule && (
-                  <ModuleView
+                  <ModuleCard
                     index={activeModule.id}
                     module={activeModule}
                     refreshPage={refreshPage}

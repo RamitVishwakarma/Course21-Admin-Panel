@@ -48,7 +48,7 @@ export default function ViewModule() {
 
   const updateLectureSequence = () => {
     axios
-      .put(`${import.meta.env.VITE_BACKEND_URL}modules/${id}`, {
+      .post(`${import.meta.env.VITE_BACKEND_URL}modules/${id}`, {
         module_id: id,
         lecture_ids: lectureId,
       })
@@ -67,10 +67,13 @@ export default function ViewModule() {
 
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}modules/${id}`)
+      .get(`${import.meta.env.VITE_BACKEND_URL}modules/${id}`) //? need to fix this later
       .then((res) => {
-        setModule(res.data.module);
-        setLectures(res.data.modules.lectures);
+        // console.log(res.data.data.modules[0].lectures);
+        console.log(res.data.data.modules[0]);
+        console.log(res.data.data.modules[0].lectures);
+        setModule(res.data.data.modules[0]);
+        setLectures(res.data.data.modules[0].lectures);
         setLoading(false);
       })
       .catch((err) => {
@@ -103,8 +106,9 @@ export default function ViewModule() {
                 <LectureView
                   lecture={lecture}
                   index={lecture.id}
+                  moduleId={id}
+                  courseId={module?.course_id}
                   refreshPage={refreshPage}
-                  courseId={Number(id)}
                 />
               </div>
             ))}
@@ -113,11 +117,12 @@ export default function ViewModule() {
             <div className="text-bodydark">
               <DragOverlay>
                 {activeLecture && (
-                  <ViewLecture
+                  <LectureView
                     index={activeLecture.id}
-                    module={activeLecture}
+                    lecture={activeLecture}
+                    moduleId={id}
+                    courseId={module?.course_id}
                     refreshPage={refreshPage}
-                    courseId={Number(id)}
                   />
                 )}
               </DragOverlay>

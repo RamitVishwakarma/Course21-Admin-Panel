@@ -15,7 +15,7 @@ export default function UpdateModule({
   courseId,
   moduleId,
   name,
-  image_path,
+  image_path, //? update the design if needed
   refreshPage,
 }: {
   courseId: number;
@@ -33,7 +33,7 @@ export default function UpdateModule({
 
   const [data, setData] = useState<FormData>({
     name: name ? name : '',
-    featured_image: image_path ? image_path : new File([''], ''),
+    featured_image: new File([''], ''),
     course_id: courseId,
   });
 

@@ -7,17 +7,22 @@ import { Bars4Icon, EyeIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const ModuleView = ({
-  module,
-  index,
-  refreshPage,
-  courseId,
-}: {
+interface ModuleCardProps {
   module: Modules;
   index: number;
   refreshPage: () => void;
   courseId: number;
-}) => {
+}
+
+export default function ModuleCard({
+  module,
+  index,
+  refreshPage,
+  courseId,
+}: ModuleCardProps) {
+  const [mouseHover, setMouseHover] = useState(false);
+  const navigate = useNavigate();
+
   const {
     setNodeRef,
     attributes,
@@ -36,10 +41,6 @@ const ModuleView = ({
     transition,
     transform: CSS.Transform.toString(transform),
   };
-
-  const [mouseHover, setMouseHover] = useState(false);
-
-  const navigate = useNavigate();
 
   if (isDragging) {
     return (
@@ -125,6 +126,4 @@ const ModuleView = ({
       </div>
     </div>
   );
-};
-
-export default ModuleView;
+}
