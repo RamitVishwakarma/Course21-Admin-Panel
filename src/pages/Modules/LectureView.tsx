@@ -1,8 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Bars4Icon, EyeIcon } from '@heroicons/react/24/solid';
+import { Bars4Icon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import UpdateLecture from '../Lectures/UpdateLecture';
 import DeleteLecture from '../Lectures/DeleteLecture';
 import { Lectures } from '@/interfaces/Lectures';
@@ -40,8 +39,6 @@ const LectureView = ({
   };
 
   const [mouseHover, setMouseHover] = useState(false);
-
-  const navigate = useNavigate();
 
   if (isDragging) {
     return (
@@ -95,18 +92,6 @@ const LectureView = ({
               </div>
               {mouseHover && (
                 <div className="flex items-center space-x-3.5 -mt-20">
-                  {/* View */}
-                  <button
-                    onClick={() => {
-                      navigate(
-                        `/admin/view-course/${courseId}/view-module/${module.id}`,
-                      );
-                    }}
-                    className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full bg-meta-3 py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6"
-                  >
-                    <EyeIcon className="h-4 w-4" />
-                    View
-                  </button>
                   {/* Update Module */}
                   <UpdateLecture
                     lectureId={lecture.id}

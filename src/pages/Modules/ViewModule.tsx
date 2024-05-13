@@ -37,7 +37,7 @@ export default function ViewModule() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 10,
+        distance: 100,
       },
     }),
   );
@@ -46,22 +46,20 @@ export default function ViewModule() {
     [lectures],
   );
 
-  const updateLectureSequence = () => {
+  const updateLectureSequence = (updatedLectureIds: number[]) => {
     axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}modules/${id}`, {
+      .post(`${import.meta.env.VITE_BACKEND_URL}modules/update-sequence`, {
         module_id: id,
-        lecture_ids: lectureId,
+        lecture_ids: updatedLectureIds,
       })
       .then((res) => {
-        console.log(lectureId);
-        console.log(res);
         toast({
-          title: 'Lecture sequence updated',
+          title: res.data.message,
         });
       })
       .catch((err) => {
         toast({
-          title: 'Failed to update lecture sequence',
+          title: err.response.data.message,
           variant: 'destructive',
         });
       });
@@ -160,8 +158,16 @@ export default function ViewModule() {
         (lecture) => lecture.id === overId,
       );
       // console.log(activelectureIndex, overlectureIndex);
-      return arrayMove(lecture, activeLectureIndex, overLectureIndex);
+      const updatedLectures = arrayMove(
+        lecture,
+        activeLectureIndex,
+        overLectureIndex,
+      );
+      const updatedLectureIds: number[] = updatedLectures.map(
+        (lecture) => lecture.id,
+      );
+      updateLectureSequence(updatedLectureIds);
+      return updatedLectures;
     });
-    updateLectureSequence();
   }
 }
