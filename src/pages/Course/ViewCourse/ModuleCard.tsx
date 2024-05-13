@@ -92,7 +92,7 @@ export default function ModuleCard({
               <div className=" flex flex-col">
                 <div className="font-medium text-2xl -px ">{module.name}</div>
                 <div className="text-lg">
-                  <div>Total Lectures {module.lectures.length}</div>
+                  <div>Total Lectures : {module.lectures.length}</div>
                 </div>
               </div>
               {mouseHover && (

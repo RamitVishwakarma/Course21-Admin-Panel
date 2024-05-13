@@ -53,6 +53,8 @@ export default function ViewModule() {
         lecture_ids: lectureId,
       })
       .then((res) => {
+        console.log(lectureId);
+        console.log(res);
         toast({
           title: 'Lecture sequence updated',
         });
@@ -67,13 +69,12 @@ export default function ViewModule() {
 
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}modules/${id}`) //? need to fix this later
+      .get(`${import.meta.env.VITE_BACKEND_URL}modules/${id}`)
       .then((res) => {
-        // console.log(res.data.data.modules[0].lectures);
-        console.log(res.data.data.modules[0]);
-        console.log(res.data.data.modules[0].lectures);
-        setModule(res.data.data.modules[0]);
-        setLectures(res.data.data.modules[0].lectures);
+        console.log(res.data.module);
+        setModule(res.data.module);
+        setLectures(res.data.module.lectures);
+        console.log(res.data.module.lectures);
         setLoading(false);
       })
       .catch((err) => {
@@ -91,7 +92,7 @@ export default function ViewModule() {
         {/* Module Creation */}
         <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-stroke/20 md:px-6 2xl:px-7.5">
           <div className="flex text-xl items-center justify-between">
-            <p className="font-medium text-3xl">Modules</p>
+            <p className="font-medium text-3xl">Lectures</p>
             <CreateLecture moduleId={Number(id)} refreshPage={refreshPage} />
           </div>
         </div>

@@ -40,7 +40,6 @@ const ViewCourse: React.FC = () => {
         console.log(res.data);
         setCourse(res.data.data);
         setModules(res.data.data.modules);
-        // console.log(res.data.data.modules);
         setLoading(false);
       })
       .catch((err) => {
@@ -60,11 +59,11 @@ const ViewCourse: React.FC = () => {
     }),
   );
 
-  const updateModuleSequence = () => {
+  const updateModuleSequence = (updatedModuleIds: number[]) => {
     axios
       .post(`${import.meta.env.VITE_BACKEND_URL}courses/update-sequence`, {
         course_id: Number(id),
-        module_ids: moduleId,
+        module_ids: updatedModuleIds,
       })
       .then((res) => {
         toast({
@@ -154,10 +153,19 @@ const ViewCourse: React.FC = () => {
       const overModuleIndex = module.findIndex(
         (module) => module.id === overId,
       );
-      // console.log(activeModuleIndex, overModuleIndex);
-      return arrayMove(module, activeModuleIndex, overModuleIndex);
+      console.log(activeModuleIndex, overModuleIndex);
+      console.log(module[activeModuleIndex], module[overModuleIndex]);
+      const updatedModules = arrayMove(
+        module,
+        activeModuleIndex,
+        overModuleIndex,
+      );
+      const updatedModuleIds: number[] = updatedModules.map(
+        (module) => module.id,
+      );
+      updateModuleSequence(updatedModuleIds);
+      return updatedModules;
     });
-    updateModuleSequence();
   }
 };
 

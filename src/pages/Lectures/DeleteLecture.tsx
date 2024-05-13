@@ -4,7 +4,7 @@ import { Fragment, useState } from 'react';
 import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
 
-export default function DeletLecture({
+export default function DeleteLecture({
   lectureId,
   refresh,
 }: {
@@ -47,9 +47,10 @@ export default function DeletLecture({
         <button
           type="button"
           onClick={openModal}
-          className="hover:text-primary"
+          className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full bg-meta-1 py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6"
         >
-          <TrashIcon className="h-4 w-4" />
+          <TrashIcon className="h-4 w-4 cursor-pointer" />
+          Delete
         </button>
       </div>
 

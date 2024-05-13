@@ -37,7 +37,7 @@ export default function UpdateLecture({
 
   const [data, setData] = useState<FormData>({
     name: name ? name : '',
-    featured_image: image_path ? image_path : new File([''], ''),
+    featured_image: new File([''], ''),
     course_id: courseId,
     module_id: moduleId,
   });
@@ -84,7 +84,10 @@ export default function UpdateLecture({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <PencilIcon className="h-4 w-4 cursor-pointer hover:text-primary" />
+        <button className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full bg-primary py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6">
+          <PencilIcon className="h-4 w-4" />
+          Edit
+        </button>
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>Update Lecture</DialogTitle>

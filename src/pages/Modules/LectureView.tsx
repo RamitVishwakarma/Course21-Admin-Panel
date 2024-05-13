@@ -4,7 +4,7 @@ import { Bars4Icon, EyeIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UpdateLecture from '../Lectures/UpdateLecture';
-import DeletLecture from '../Lectures/DeleteLecture';
+import DeleteLecture from '../Lectures/DeleteLecture';
 import { Lectures } from '@/interfaces/Lectures';
 
 const LectureView = ({
@@ -28,10 +28,10 @@ const LectureView = ({
     transition,
     isDragging,
   } = useSortable({
-    id: module.id,
+    id: lecture.id,
     data: {
-      type: 'module',
-      module,
+      type: 'lecture',
+      lecture,
     },
   });
   const style = {
@@ -110,13 +110,13 @@ const LectureView = ({
                   {/* Update Module */}
                   <UpdateLecture
                     lectureId={lecture.id}
-                    courseId={courseId}
-                    moduleId={module.id}
-                    name={module.name}
-                    image_path={module.image_path}
+                    courseId={Number(courseId)}
+                    moduleId={moduleId}
+                    name={lecture.name}
+                    image_path={lecture.image_path}
                     refreshPage={refreshPage}
                   />
-                  <DeletLecture moduleId={module.id} refresh={refreshPage} />
+                  <DeleteLecture lectureId={lecture.id} refresh={refreshPage} />
                 </div>
               )}
             </div>

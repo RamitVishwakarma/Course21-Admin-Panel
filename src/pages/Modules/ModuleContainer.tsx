@@ -1,15 +1,6 @@
 import { Modules } from '../../interfaces/Modules';
 
 const ModuleContainer = ({ module }: { module: Modules }) => {
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Kolkata',
-  };
   return (
     <div className="py-6 px-4 md:px-6 xl:px-7.5">
       <div className="flex gap-4 items-center ">
@@ -30,12 +21,17 @@ const ModuleContainer = ({ module }: { module: Modules }) => {
           <h4 className="text-2xl font-semibold text-black dark:text-white">
             {module?.name}
           </h4>
-          <div className="">
+          <div>
+            <p className="text-lg text-gray-2 dark:text-gray-4">
+              Total Lectures: {module?.lectures.length}
+            </p>
+          </div>
+          {/* <div className="">
             Last updated at:{' '}
             {module?.updated_at
               ? new Date(module.updated_at).toLocaleString('en-IN', dateOptions)
               : null}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
