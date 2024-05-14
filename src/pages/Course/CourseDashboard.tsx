@@ -16,7 +16,11 @@ const AllCourses: React.FC = () => {
   //refresh page logic
   const [refresh, setRefresh] = useState(false);
 
-  const totalCourses = 61;
+  const [page, setPage] = useState({
+    pageNo: 0,
+    totalPages: 0,
+  });
+
   const limit = 10;
   const [offset, setOffset] = useState(0);
 
@@ -41,8 +45,11 @@ const AllCourses: React.FC = () => {
         }courses?limit=${limit}&offset=${offset}`,
       )
       .then((res) => {
-        console.log(res.data.data);
         setCourses(res.data.data);
+        setPage({
+          pageNo: res.data.pageNo,
+          totalPages: res.data.totalPages,
+        });
         setLoading(false);
       })
       .catch((err) => {
@@ -163,8 +170,7 @@ const AllCourses: React.FC = () => {
       </div>
       <div className="flex justify-between items-center mt-5">
         <p className="text-black dark:text-white">
-          Showing {offset + 1} to {offset + courses.length} of {totalCourses}{' '}
-          entries
+          Showing Page {page.pageNo} of {page.totalPages}
         </p>
         <div className="flex gap-2">
           <button

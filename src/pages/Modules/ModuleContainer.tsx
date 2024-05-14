@@ -12,7 +12,7 @@ const ModuleContainer = ({ module }: { module: Modules }) => {
               className="w-40 h-40 rounded-lg objet-cover"
             />
           ) : (
-            <div className="w-40 h-40 bg-gray-2 dark:bg-black text-white text-center flex items-center rounded-md">
+            <div className="w-40 h-40 bg-gray-2 dark:bg-black text-white flex justify-center items-center rounded-md">
               No image set
             </div>
           )}
@@ -26,12 +26,6 @@ const ModuleContainer = ({ module }: { module: Modules }) => {
               Total Lectures: {module?.lectures.length}
             </p>
           </div>
-          {/* <div className="">
-            Last updated at:{' '}
-            {module?.updated_at
-              ? new Date(module.updated_at).toLocaleString('en-IN', dateOptions)
-              : null}
-          </div> */}
         </div>
       </div>
     </div>
