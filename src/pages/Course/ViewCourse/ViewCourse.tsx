@@ -153,8 +153,6 @@ const ViewCourse: React.FC = () => {
       const overModuleIndex = module.findIndex(
         (module) => module.id === overId,
       );
-      console.log(activeModuleIndex, overModuleIndex);
-      console.log(module[activeModuleIndex], module[overModuleIndex]);
       const updatedModules = arrayMove(
         module,
         activeModuleIndex,

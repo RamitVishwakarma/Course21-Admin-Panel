@@ -66,13 +66,17 @@ export default function ModuleCard({
       className={`py-2 px-4 md:px-6 2xl:px-7.5 rounded-md hover:ring-2 hover:dark:ring-white hover:ring-bodydark bg-gray-2 dark:bg-meta-4 `}
       key={index}
     >
-      <div {...attributes} {...listeners}>
+      <div>
         <div
           onMouseEnter={() => setMouseHover(true)}
           onMouseLeave={() => setMouseHover(false)}
           className="flex gap-4 items-center p-4 "
         >
-          {mouseHover && <Bars4Icon className="h-9 w-9  cursor-grab" />}
+          {mouseHover && (
+            <div {...attributes} {...listeners}>
+              <Bars4Icon className="h-9 w-9  cursor-grab" />
+            </div>
+          )}
           {module.image_path ? (
             <img
               src={`${import.meta.env.VITE_BACKEND_STORAGE_URL}${
