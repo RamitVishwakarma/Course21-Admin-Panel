@@ -37,31 +37,31 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
     loadOptions();
   }, [id]);
 
-   const open = () => {
-     setShow(true);
-   };
+  const open = () => {
+    setShow(true);
+  };
 
-   const isOpen = () => {
-     return show === true;
-   };
+  const isOpen = () => {
+    return show === true;
+  };
 
- const select = (index: number, event: React.MouseEvent) => {
-   const newOptions = [...options];
+  const select = (index: number, event: React.MouseEvent) => {
+    const newOptions = [...options];
 
-   if (!newOptions[index].selected) {
-     newOptions[index].selected = true;
-     newOptions[index].element = event.currentTarget as HTMLElement;
-     setSelected([...selected, index]);
-   } else {
-     const selectedIndex = selected.indexOf(index);
-     if (selectedIndex !== -1) {
-       newOptions[index].selected = false;
-       setSelected(selected.filter((i) => i !== index));
-     }
-   }
+    if (!newOptions[index].selected) {
+      newOptions[index].selected = true;
+      newOptions[index].element = event.currentTarget as HTMLElement;
+      setSelected([...selected, index]);
+    } else {
+      const selectedIndex = selected.indexOf(index);
+      if (selectedIndex !== -1) {
+        newOptions[index].selected = false;
+        setSelected(selected.filter((i) => i !== index));
+      }
+    }
 
-   setOptions(newOptions);
- };
+    setOptions(newOptions);
+  };
 
   const remove = (index: number) => {
     const newOptions = [...options];
@@ -78,20 +78,20 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
     return selected.map((option) => options[option].value);
   };
 
-    useEffect(() => {
-      const clickHandler = ({ target }: MouseEvent) => {
-        if (!dropdownRef.current) return;
-        if (
-          !show ||
-          dropdownRef.current.contains(target) ||
-          trigger.current.contains(target)
-        )
-          return;
-        setShow(false);
-      };
-      document.addEventListener('click', clickHandler);
-      return () => document.removeEventListener('click', clickHandler);
-    });
+  useEffect(() => {
+    const clickHandler = ({ target }: MouseEvent) => {
+      if (!dropdownRef.current) return;
+      if (
+        !show ||
+        dropdownRef.current.contains(target) ||
+        trigger.current.contains(target)
+      )
+        return;
+      setShow(false);
+    };
+    document.addEventListener('click', clickHandler);
+    return () => document.removeEventListener('click', clickHandler);
+  });
 
   return (
     <div className="relative z-50">
@@ -100,6 +100,7 @@ const MultiSelect: React.FC<DropdownProps> = ({ id }) => {
       </label>
       <div>
         <select className="hidden" id={id}>
+          <option value="4">Option 1</option>
           <option value="1">Option 2</option>
           <option value="2">Option 3</option>
           <option value="3">Option 4</option>

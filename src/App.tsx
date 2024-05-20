@@ -21,6 +21,7 @@ import {
   CourseDashboard,
   ViewCourse,
   ViewModule,
+  ManageUser,
 } from './utils/Lazyloading';
 import { Toaster } from './components/ui/toaster';
 
@@ -94,6 +95,15 @@ function App() {
               <>
                 <PageTitle title="User | Manage " />
                 <ViewModule />
+              </>
+            }
+          />
+          <Route
+            path="manage-user"
+            element={
+              <>
+                <PageTitle title="User | Manage " />
+                <ManageUser />
               </>
             }
           />
