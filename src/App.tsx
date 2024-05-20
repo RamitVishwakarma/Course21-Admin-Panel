@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation, Navigate } from 'react-router-dom';
 
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
@@ -41,6 +41,7 @@ function App() {
   ) : (
     <>
       <Routes>
+        <Route path="/" element={<Navigate to="/auth/signin" />} />
         <Route
           path="/auth/signin"
           element={
@@ -60,8 +61,6 @@ function App() {
           }
         />
         <Route path="/admin/" element={<ProtectedRoute />}>
-          {/* Course Section */}
-          {/* <Route path="create-course" element={<CreateCourse />} /> */}
           <Route
             path="course-dashboard"
             element={
@@ -71,7 +70,6 @@ function App() {
               </>
             }
           />
-          {/* <Route path="update-course/:id" element={<UpdateCourse />} /> */}
           <Route
             path="view-course/:id"
             element={
@@ -90,9 +88,15 @@ function App() {
               </>
             }
           />
-          {/* Module Section */}z{' '}
-          {/* <Route path="create-module/:id" element={<CreateModule />} /> */}
-          {/* <Route path="update-module/:id" element={<UpdateModule />} /> */}
+          <Route
+            path="view-course/:id/view-module/:id"
+            element={
+              <>
+                <PageTitle title="User | Manage " />
+                <ViewModule />
+              </>
+            }
+          />
         </Route>
 
         <Route
