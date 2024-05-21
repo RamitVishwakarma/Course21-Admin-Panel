@@ -5,6 +5,7 @@ import axios from 'axios';
 import DefaultLayout from '../../layout/DefaultLayout';
 import Loader from '../../common/Loader';
 import { SelectRole } from './Select';
+import CreateUser from './CreateUser';
 
 const ManageUser = () => {
   const [users, setUsers] = useState<User[]>();
@@ -20,7 +21,7 @@ const ManageUser = () => {
     axios
       .get(`${import.meta.env.VITE_BACKEND_URL}users`)
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         setUsers(res.data.data);
         setLoading(false);
       })
@@ -33,7 +34,7 @@ const ManageUser = () => {
     axios
       .get(`${import.meta.env.VITE_BACKEND_URL}roles`)
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         setRoles(res.data);
       })
       .catch((err) => {
@@ -58,7 +59,9 @@ const ManageUser = () => {
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 ">
         <div className="max-w-full overflow-x-auto">
           {/* Create a user route popup */}
-          <div className="text-end pb-6"></div>
+          <div className="text-end pb-6">
+            <CreateUser refreshPage={refreshPage} />
+          </div>
           <table className="w-full table-auto">
             <thead className="text-xl">
               <tr className="bg-gray-2 text-left dark:bg-meta-4 ">
