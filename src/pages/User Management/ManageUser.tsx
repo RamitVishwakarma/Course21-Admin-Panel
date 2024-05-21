@@ -6,6 +6,7 @@ import DefaultLayout from '../../layout/DefaultLayout';
 import Loader from '../../common/Loader';
 import { SelectRole } from './Select';
 import CreateUser from './CreateUser';
+import DeleteUser from './DeleteUser';
 
 const ManageUser = () => {
   const [users, setUsers] = useState<User[]>();
@@ -74,11 +75,14 @@ const ManageUser = () => {
                 <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                   Updated At
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white">
                   Role
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white">
                   Set Role
+                </th>
+                <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white">
+                  Delete
                 </th>
               </tr>
             </thead>
@@ -143,13 +147,17 @@ const ManageUser = () => {
                       'loading'
                     )}
                   </td>
+                  <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                    <div className="flex items-center space-x-3.5">
+                      <DeleteUser userId={user.id} refreshPage={refreshPage} />
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-      <div className="flex justify-between items-center mt-5"></div>
     </DefaultLayout>
   );
 };
