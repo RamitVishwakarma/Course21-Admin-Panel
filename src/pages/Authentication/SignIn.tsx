@@ -247,12 +247,14 @@ const SignIn: React.FC = () => {
                     />
                   </div>
 
-                  <div className="mt-6 text-center">
+                  <div className="mt-6 text-md text-center">
                     <p>
-                      Don’t have any account?{' '}
-                      <Link to="/auth/signup" className="text-primary">
-                        Sign Up
-                      </Link>
+                      Don’t have any account?
+                      <br />
+                      <span className="text-xs">
+                        {' '}
+                        Ask an admin to create an account for you{' '}
+                      </span>
                     </p>
                   </div>
                 </form>
