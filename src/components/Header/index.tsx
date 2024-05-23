@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-import ProfileImg from '../Images/profileImg.jpg';
+import ProfileImg from '../profimg/profileImg.jpg';
 import LogoIcon from '../../images/logo/logo-icon.svg';
 import DarkModeSwitcher from './DarkModeSwitcher';
 
