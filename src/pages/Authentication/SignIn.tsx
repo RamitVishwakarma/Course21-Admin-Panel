@@ -51,7 +51,7 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center min-h-screen dark:bg-black">
       <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-24">
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark my-auto">
           <div className="flex flex-wrap items-center">
