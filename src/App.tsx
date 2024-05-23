@@ -16,7 +16,6 @@ import Buttons from './pages/not using/UiElements/Buttons';
 
 import {
   SignIn,
-  SignUp,
   ProtectedRoute,
   CourseDashboard,
   ViewCourse,
@@ -52,15 +51,7 @@ function App() {
             </>
           }
         />
-        <Route
-          path="/auth/signup"
-          element={
-            <>
-              <PageTitle title="Signup | Course21 " />
-              <SignUp />
-            </>
-          }
-        />
+
         <Route path="/admin/" element={<ProtectedRoute />}>
           <Route
             path="course-dashboard"
@@ -107,9 +98,18 @@ function App() {
               </>
             }
           />
+          <Route
+            path="dashboard"
+            element={
+              <>
+                <PageTitle title="Course21 | Dashboard" />
+                <ECommerce />
+              </>
+            }
+          />
         </Route>
 
-        <Route
+        {/* <Route
           path="/sjske"
           element={
             <>
@@ -199,7 +199,7 @@ function App() {
               <Buttons />
             </>
           }
-        />
+        /> */}
       </Routes>
       <Toaster />
     </>
