@@ -25,11 +25,11 @@ const AllCourses: React.FC = () => {
   const [offset, setOffset] = useState(0);
 
   const handleNext = () => {
-    console.log('Next');
-    setOffset(offset + limit);
+    if (page.pageNo < page.totalPages) {
+      setOffset(offset + limit);
+    }
   };
   const handlePrevious = () => {
-    console.log('Previous');
     if (offset > 0) {
       setOffset(offset - limit);
     }
