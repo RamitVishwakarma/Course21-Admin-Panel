@@ -35,6 +35,8 @@ export default function UpdateCourse({
     image_path: image_path ? image_path : new File([], ''),
     courseId: courseId,
   });
+  // dialog state
+  const [open, setOpen] = useState(false);
 
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.type === 'file') {
@@ -77,7 +79,7 @@ export default function UpdateCourse({
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <PencilIcon className="h-4 w-4 cursor-pointer hover:text-primary" />
       </DialogTrigger>

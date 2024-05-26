@@ -61,7 +61,9 @@ const ManageUser = () => {
         <div className="max-w-full overflow-x-auto">
           {/* Create a user route popup */}
           <div className="text-end pb-6">
-            <CreateUser refreshPage={refreshPage} />
+            {roles ? (
+              <CreateUser refreshPage={refreshPage} roles={roles} />
+            ) : null}
           </div>
           <table className="w-full table-auto">
             <thead className="text-xl">

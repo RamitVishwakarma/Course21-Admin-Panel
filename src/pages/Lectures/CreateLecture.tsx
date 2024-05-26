@@ -33,6 +33,9 @@ export default function CreateLecture({
 
   const { toast } = useToast();
 
+  // dialog state
+  const [open, setOpen] = useState(false);
+
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.type === 'file') {
       setData({ ...data, [e.target.name]: e.target.files![0] });
@@ -67,7 +70,7 @@ export default function CreateLecture({
       });
   };
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button className=" inline-flex items-center justify-center gap-2.5 rounded-full bg-meta-3 py-2 px-6 text-center font-medium text-white hover:bg-opacity-80 lg:px-4 xl:px-6">
           <PlusCircleIcon className="h-5 w-5" />

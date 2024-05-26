@@ -32,6 +32,8 @@ export default function CreateModule({
   });
 
   const { toast } = useToast();
+  //dialog state
+  const [open, setOpen] = useState(false);
 
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.type === 'file') {
@@ -67,7 +69,7 @@ export default function CreateModule({
       });
   };
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button className=" inline-flex items-center justify-center gap-2.5 rounded-full bg-meta-3 py-4 px-6 text-center font-medium text-white hover:bg-opacity-80 lg:px-4 xl:px-6">
           <PlusCircleIcon className="h-5 w-5" />

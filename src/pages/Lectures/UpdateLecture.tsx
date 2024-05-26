@@ -41,6 +41,8 @@ export default function UpdateLecture({
     course_id: courseId,
     module_id: moduleId,
   });
+  // dialog state
+  const [open, setOpen] = useState(false);
 
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.type === 'file') {
@@ -82,7 +84,7 @@ export default function UpdateLecture({
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full bg-primary py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6">
           <PencilIcon className="h-4 w-4" />

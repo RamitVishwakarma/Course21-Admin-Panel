@@ -12,11 +12,15 @@ import {
 import { PlusCircleIcon } from '@heroicons/react/20/solid';
 import { useToast } from '@/components/ui/use-toast';
 import { AtSymbolIcon, KeyIcon, UserIcon } from '@heroicons/react/24/solid';
+import Role from '../../interfaces/Roles';
+import { SelectRole } from './Select';
 
 export default function CreateUser({
   refreshPage,
+  roles,
 }: {
   refreshPage: () => void;
+  roles: Role[];
 }) {
   interface FormData {
     name: string;
@@ -30,6 +34,8 @@ export default function CreateUser({
     email: '',
     password: '',
   });
+  // dialog state
+  const [open, setOpen] = useState(false);
 
   const { toast } = useToast();
 
@@ -61,7 +67,7 @@ export default function CreateUser({
       });
   };
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button className=" inline-flex items-center justify-center gap-2.5 rounded-full bg-meta-3 py-4 px-6 text-center font-medium text-white hover:bg-opacity-80 lg:px-4 xl:px-6">
           <PlusCircleIcon className="h-5 w-5" />
@@ -147,6 +153,13 @@ export default function CreateUser({
               </span>
             </div>
           </div>
+          {/* select */}
+          <SelectRole
+            roles={roles}
+            selected_option="Select Role"
+            userId={0}
+            refreshPage={refreshPage}
+          />
 
           <DialogFooter>
             <div className="mb-5">
