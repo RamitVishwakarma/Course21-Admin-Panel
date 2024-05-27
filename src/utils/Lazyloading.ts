@@ -12,3 +12,6 @@ export const ViewModule = loadable(() => import('../pages/Modules/ViewModule'));
 export const ManageUser = loadable(
   () => import('../pages/User Management/ManageUser'),
 );
+export const ManageRole = loadable(
+  () => import('../pages/Role Manager/ManageRole'),
+);
