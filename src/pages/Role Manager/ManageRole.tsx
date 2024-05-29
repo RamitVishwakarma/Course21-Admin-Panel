@@ -1,10 +1,9 @@
 import DefaultLayout from '@/layout/DefaultLayout';
 import Loader from '../../common/Loader';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Role from '../../interfaces/Roles';
 import axios from 'axios';
 import Permission from '../../interfaces/Permission';
-import { PencilIcon } from 'lucide-react';
 import EditRole from './EditRole';
 
 const ManageRole = () => {

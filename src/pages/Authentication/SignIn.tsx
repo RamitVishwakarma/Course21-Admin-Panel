@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 const SignIn: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+
   interface FormData {
     email_or_username: string;
     password: string;
@@ -35,14 +36,11 @@ const SignIn: React.FC = () => {
         },
       })
       .then((res) => {
-        console.log(res);
-        console.log(res.data.token);
-        sessionStorage.setItem('Authorisation', res.data.token);
+        sessionStorage.setItem('Authorization', res.data.token);
         navigate('/admin/course-dashboard');
       })
       .catch((err) => {
         console.log(err);
-        // alert('Login Failed');
         toast({
           title: 'Login Failed',
           variant: 'destructive',

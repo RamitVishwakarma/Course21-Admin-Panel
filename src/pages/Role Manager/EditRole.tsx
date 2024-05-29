@@ -22,7 +22,6 @@ const EditRole = ({
   const [open, setOpen] = useState(false);
   const [selectedPerms, setSelectedPerms] = useState<number[]>([]);
   const { toast } = useToast();
-
   const handleUpdateRole = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPerms([...selectedPerms, parseInt(e.target.id)]);
   };
@@ -30,10 +29,18 @@ const EditRole = ({
   const updateRole = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}permissions/role/bulk-assign`, {
-        role_id: role.id,
-        permission_ids: selectedPerms,
-      })
+      .post(
+        `${import.meta.env.VITE_BACKEND_URL}permissions/role/bulk-assign`,
+        {
+          role_id: role.id,
+          permissions: selectedPerms,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('Authorization')}`,
+          },
+        },
+      )
       .then((res) => {
         console.log(res);
         setOpen(false);
