@@ -15,9 +15,11 @@ import { useToast } from '@/components/ui/use-toast';
 const EditRole = ({
   role,
   permissions,
+  refreshPage,
 }: {
   role: Role;
   permissions: Permission[];
+  refreshPage: () => void;
 }) => {
   const [open, setOpen] = useState(false);
   const [selectedPerms, setSelectedPerms] = useState<number[]>([]);
@@ -43,6 +45,7 @@ const EditRole = ({
       )
       .then((res) => {
         console.log(res);
+        refreshPage();
         setOpen(false);
         toast({
           title: 'Permissions updated successfully',

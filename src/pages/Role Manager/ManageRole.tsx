@@ -1,6 +1,6 @@
 import DefaultLayout from '@/layout/DefaultLayout';
 import Loader from '../../common/Loader';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Role from '../../interfaces/Roles';
 import axios from 'axios';
 import Permission from '../../interfaces/Permission';
@@ -9,6 +9,7 @@ import EditRole from './EditRole';
 const ManageRole = () => {
   const [loading, setLoading] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [refresh, setRefresh] = useState(false);
   //geting roles
   useEffect(() => {
     axios
@@ -33,7 +34,11 @@ const ManageRole = () => {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [refresh]);
+
+  const refreshPage = () => {
+    setRefresh(!refresh);
+  };
 
   return loading ? (
     <Loader />
@@ -78,7 +83,11 @@ const ManageRole = () => {
                   <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5 ml-4">
                       <button className="hover:text-primary">
-                        <EditRole role={role} permissions={permissions} />
+                        <EditRole
+                          role={role}
+                          permissions={permissions}
+                          refreshPage={refreshPage}
+                        />
                       </button>
                     </div>
                   </td>

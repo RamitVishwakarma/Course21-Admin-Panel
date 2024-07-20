@@ -28,7 +28,7 @@ export default function ViewModule() {
   const [loading, setLoading] = useState<boolean>(true);
   const [refresh, setRefresh] = useState(false);
   const { toast } = useToast();
-  const [activeLecture, setActiveLecture] = useState<Lectures>();
+  const [activeLecture, setActiveLecture] = useState<Lectures | null>(null);
 
   const refreshPage = () => {
     setRefresh(!refresh);
@@ -135,8 +135,9 @@ export default function ViewModule() {
 
   function onDragStart(event: DragStartEvent) {
     // console.log(event.active.data.current?.module);
-    if (event.active.data.current?.type === 'module') {
-      setActiveLecture(event.active.data.current.module);
+    console.log(event.active.data.current);
+    if (event.active.data.current?.type === 'lecture') {
+      setActiveLecture(event.active.data.current.lecture);
       return;
     }
   }
