@@ -77,7 +77,6 @@ const ViewLectures = ({
             moduleId={moduleId}
             courseId={courseId}
             name={lecture.name}
-            image_path={lecture.image_path}
             refreshPage={refreshPage}
           />
           <DeleteLecture lectureId={lecture.id} refresh={refreshPage} />

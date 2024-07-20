@@ -10,20 +10,20 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
+import VideoUploader from './VideoUploader';
 
 export default function UpdateLecture({
   lectureId,
   courseId,
   moduleId,
   name,
-  image_path,
   refreshPage,
 }: {
   lectureId: number;
   courseId: number;
   moduleId: number;
   name: string;
-  image_path: string;
+
   refreshPage: () => void;
 }) {
   const { toast } = useToast();
@@ -125,6 +125,10 @@ export default function UpdateLecture({
               className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
             />
           </div>
+          {/* Video upload */}
+
+          <VideoUploader />
+
           {/* Submit Button */}
           <DialogFooter>
             <div className="mb-5">
