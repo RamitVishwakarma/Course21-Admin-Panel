@@ -77,6 +77,7 @@ const ViewLectures = ({
             moduleId={moduleId}
             courseId={courseId}
             name={lecture.name}
+            videoFile={lecture.video_file}
             refreshPage={refreshPage}
           />
           <DeleteLecture lectureId={lecture.id} refresh={refreshPage} />

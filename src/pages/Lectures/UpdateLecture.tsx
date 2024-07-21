@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import axios from 'axios';
-import { useState } from 'react';
 import { IdentificationIcon, PencilIcon } from '@heroicons/react/20/solid';
 import {
   Dialog,
@@ -10,7 +9,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import VideoUploader from './VideoUploader';
 
 export default function UpdateLecture({
   lectureId,
@@ -18,12 +16,13 @@ export default function UpdateLecture({
   moduleId,
   name,
   refreshPage,
+  videoFile,
 }: {
   lectureId: number;
   courseId: number;
   moduleId: number;
   name: string;
-
+  videoFile: string;
   refreshPage: () => void;
 }) {
   const { toast } = useToast();
@@ -33,6 +32,7 @@ export default function UpdateLecture({
     featured_image: File | string;
     course_id: number;
     module_id: number;
+    video_file?: string;
   }
 
   const [data, setData] = useState<FormData>({
@@ -40,8 +40,9 @@ export default function UpdateLecture({
     featured_image: new File([''], ''),
     course_id: courseId,
     module_id: moduleId,
+    video_file: videoFile,
   });
-  // dialog state
+
   const [open, setOpen] = useState(false);
 
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,33 +55,54 @@ export default function UpdateLecture({
 
   const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(data);
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('course_id', data.course_id.toString());
+    formData.append('module_id', data.module_id.toString());
+    formData.append(
+      'featured_image',
+      data.featured_image ? data.featured_image : '',
+    );
+    if (file) {
+      formData.append('file', file);
+    }
     axios
       .post(
         `${import.meta.env.VITE_BACKEND_URL}lectures/update/${lectureId}`,
-        data,
+        formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
+          onUploadProgress: (ProgressEvent) => {
+            const percentCompleted = ProgressEvent.total
+              ? Math.round((ProgressEvent.loaded * 100) / ProgressEvent.total)
+              : 0;
+            setUploadProgress(percentCompleted);
+          },
         },
       )
       .then((res) => {
-        console.log(res);
         toast({
           title: 'Lecture Updated Successfully',
         });
         refreshPage();
-        // alert('Lecture Updated Successfully');
       })
       .catch((err) => {
-        console.log(err);
         toast({
           title: 'Lecture Update Failed',
           variant: 'destructive',
         });
-        // alert('Lecture Update Failed');
       });
+  };
+
+  // handle video upload
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
   };
 
   return (
@@ -94,7 +116,6 @@ export default function UpdateLecture({
       <DialogContent>
         <DialogTitle>Update Lecture</DialogTitle>
         <form onSubmit={formSubmitHandler}>
-          {/* Name */}
           <div className="mb-4">
             <label className="mb-2.5 block font-medium text-black dark:text-white">
               Lecture Name
@@ -113,7 +134,6 @@ export default function UpdateLecture({
               </span>
             </div>
           </div>
-          {/* Image upload */}
           <div className="mb-4">
             <label className="mb-2.5 block font-medium text-black dark:text-white">
               Lecture Image
@@ -125,11 +145,37 @@ export default function UpdateLecture({
               className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
             />
           </div>
-          {/* Video upload */}
-
-          <VideoUploader />
-
-          {/* Submit Button */}
+          {/* video uploader */}
+          <div className="flex flex-col items-center justify-center bg-gray-100 p-4">
+            <div className="w-full max-w-md p-4 bg-white rounded shadow-md">
+              <h2 className="mb-4 text-lg font-semibold text-gray-700">
+                Video Uploader
+              </h2>
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleFileChange}
+                className="mb-4"
+              />
+              {file && (
+                <div className="mb-4">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">{file.name}</span>
+                    <span className="text-gray-600">
+                      {uploadProgress.toFixed(2)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-500 h-2.5 rounded-full"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          {/* video uploader end */}
           <DialogFooter>
             <div className="mb-5">
               <input
