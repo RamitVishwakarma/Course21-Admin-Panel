@@ -40,6 +40,8 @@ const LectureView = ({
 
   const [mouseHover, setMouseHover] = useState(false);
 
+  console.log(lecture.transcodingjob?.status);
+
   if (isDragging) {
     return (
       <div
@@ -92,7 +94,21 @@ const LectureView = ({
           <div className="pl-2 w-full text-xl">
             <div className="flex justify-between gap-3 text-2xl ">
               <div className=" flex flex-col">
-                <div className="font-medium text-2xl -px ">{lecture.name}</div>
+                <div className="font-medium text-2xl ">{lecture.name}</div>
+                <div className="flex items-center py-3 gap-4">
+                  <div className="text-xl ">Status:</div>
+                  <div className="flex items-center">
+                    {lecture.transcodingjob?.status === 'completed' ? (
+                      <span className=" text-xs border-2 rounded-full border-meta-3/70 px-2.5 py-1 font-medium">
+                        Ready
+                      </span>
+                    ) : (
+                      <span className=" text-xs border-2 rounded-full border-meta-1/70 px-2 py-0.5 font-medium">
+                        In Progress
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
               {mouseHover && (
                 <div className="flex items-center space-x-3.5 -mt-20">
@@ -102,7 +118,6 @@ const LectureView = ({
                     courseId={Number(courseId)}
                     moduleId={moduleId}
                     name={lecture.name}
-                    image_path={lecture.image_path}
                     refreshPage={refreshPage}
                   />
                   <DeleteLecture lectureId={lecture.id} refresh={refreshPage} />

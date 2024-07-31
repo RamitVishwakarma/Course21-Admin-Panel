@@ -10,4 +10,5 @@ export interface Lectures {
   image_path: string;
   created_at: Date;
   updated_at: Date;
+  transcodingjob: null | any;
 }
