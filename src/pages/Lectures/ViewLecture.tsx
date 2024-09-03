@@ -64,9 +64,20 @@ const ViewLecture = ({
           </button>
         </DialogTrigger>
         <DialogContent>
-          <DialogTitle className='opacity-60'>View Lecture</DialogTitle>
-          {Lecture.name && <h1 className="text-xl text-meta-2 font-semibold">{Lecture.name}</h1>}
-          {src && <VideoPlayer hlsSrc={src} posterSrc={`${import.meta.env.VITE_BACKEND_STORAGE_URL}/${Lecture.image_path}`} />}
+          <DialogTitle className="opacity-60">View Lecture</DialogTitle>
+          {Lecture.name && (
+            <h1 className="text-xl text-meta-2 font-semibold">
+              {Lecture.name}
+            </h1>
+          )}
+          {src && (
+            <VideoPlayer
+              hlsSrc={src}
+              posterSrc={`${import.meta.env.VITE_BACKEND_STORAGE_URL}/${
+                Lecture.image_path
+              }`}
+            />
+          )}
           <DialogFooter>Dialog Footer</DialogFooter>
         </DialogContent>
       </Dialog>

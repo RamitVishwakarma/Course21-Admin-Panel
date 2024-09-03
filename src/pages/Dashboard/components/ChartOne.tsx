@@ -1,6 +1,7 @@
-import { ApexOptions } from 'apexcharts';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
+import DatePicker from './DatePicker';
+import { ApexOptions } from 'apexcharts';
 
 const options: ApexOptions = {
   legend: {
@@ -21,7 +22,6 @@ const options: ApexOptions = {
       left: 0,
       opacity: 0.1,
     },
-
     toolbar: {
       show: false,
     },
@@ -45,13 +45,9 @@ const options: ApexOptions = {
     },
   ],
   stroke: {
-    width: [2, 2],
-    curve: 'straight',
+    width: [2],
+    curve: 'smooth',
   },
-  // labels: {
-  //   show: false,
-  //   position: "top",
-  // },
   grid: {
     xaxis: {
       lines: {
@@ -83,25 +79,16 @@ const options: ApexOptions = {
   },
   xaxis: {
     type: 'category',
-    categories: [
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-    ],
+    categories: [],
     axisBorder: {
       show: false,
     },
     axisTicks: {
       show: false,
+    },
+    labels: {
+      rotate: -45,
+      formatter: (value: string) => new Date(value).toLocaleDateString(),
     },
   },
   yaxis: {
@@ -111,7 +98,7 @@ const options: ApexOptions = {
       },
     },
     min: 0,
-    max: 100,
+    max: 30000,
   },
 };
 
@@ -120,29 +107,55 @@ interface ChartOneState {
     name: string;
     data: number[];
   }[];
+  categories: string[];
 }
 
 const ChartOne: React.FC = () => {
   const [state, setState] = useState<ChartOneState>({
     series: [
       {
-        name: 'Product One',
-        data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30, 45],
-      },
-
-      {
-        name: 'Product Two',
-        data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39, 51],
+        name: 'Total Sales',
+        data: [],
       },
     ],
+    categories: [],
   });
 
-  const handleReset = () => {
-    setState((prevState) => ({
-      ...prevState,
-    }));
-  };
-  handleReset;
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Build query parameters based on start and end dates
+        let queryParams = '';
+        if (startDate)
+          queryParams += `start_date=${startDate.toISOString().split('T')[0]}`;
+        if (endDate)
+          queryParams += `&end_date=${endDate.toISOString().split('T')[0]}`;
+
+        // Replace this with your actual API endpoint
+        const response = await fetch(`/api/sales-data?${queryParams}`);
+        const data = await response.json();
+
+        const filteredData = data.day_by_day_sales;
+
+        setState({
+          series: [
+            {
+              name: 'Total Sales',
+              data: filteredData.map((entry: any) => Number(entry.total_sales)),
+            },
+          ],
+          categories: filteredData.map((entry: any) => entry.date),
+        });
+      } catch (error) {
+        console.error('Error fetching sales data:', error);
+      }
+    };
+
+    fetchData();
+  }, [startDate, endDate]);
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
@@ -154,16 +167,11 @@ const ChartOne: React.FC = () => {
             </span>
             <div className="w-full">
               <p className="font-semibold text-primary">Total Revenue</p>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
-            </div>
-          </div>
-          <div className="flex min-w-47.5">
-            <span className="mt-1 mr-2 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-secondary">
-              <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-secondary"></span>
-            </span>
-            <div className="w-full">
-              <p className="font-semibold text-secondary">Total Sales</p>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+              <p className="text-sm font-medium">
+                {startDate && endDate
+                  ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+                  : 'Select a Date Range'}
+              </p>
             </div>
           </div>
         </div>
@@ -180,6 +188,13 @@ const ChartOne: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <DatePicker
+          onStartDateChange={(date) => setStartDate(date)}
+          onEndDateChange={(date) => setEndDate(date)}
+        />
       </div>
 
       <div>

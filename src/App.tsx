@@ -3,16 +3,6 @@ import { Route, Routes, useLocation, Navigate } from 'react-router-dom';
 
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
-import Calendar from './pages/not using/Calendar';
-import Chart from './pages/not using/Chart';
-import ECommerce from './pages/not using/Dashboard/ECommerce';
-import FormElements from './pages/not using/Form/FormElements';
-import FormLayout from './pages/not using/Form/FormLayout';
-import Profile from './pages/not using/Profile';
-import Settings from './pages/not using/Settings';
-import Tables from './pages/not using/Tables';
-import Alerts from './pages/not using/UiElements/Alerts';
-import Buttons from './pages/not using/UiElements/Buttons';
 
 import {
   SignIn,
@@ -24,6 +14,7 @@ import {
   ManageRole,
 } from './utils/Lazyloading';
 import { Toaster } from './components/ui/toaster';
+import Dashboard from './pages/Dashboard/Dashboard';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -113,7 +104,7 @@ function App() {
             element={
               <>
                 <PageTitle title="Course21 | Dashboard" />
-                <ECommerce />
+                <Dashboard />
               </>
             }
           />
