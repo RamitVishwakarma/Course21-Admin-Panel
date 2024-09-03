@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { IdentificationIcon, PencilIcon } from '@heroicons/react/20/solid';
 import {
@@ -90,7 +90,7 @@ export default function UpdateLecture({
         });
         refreshPage();
       })
-      .catch((err) => {
+      .catch(() => {
         toast({
           title: 'Lecture Update Failed',
           variant: 'destructive',

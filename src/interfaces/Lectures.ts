@@ -4,6 +4,7 @@ export interface Lectures {
   module_id: number;
   prefix: string;
   video_file: string;
+  video_id: string;
   name: string;
   file_id: number;
   is_trial: boolean;

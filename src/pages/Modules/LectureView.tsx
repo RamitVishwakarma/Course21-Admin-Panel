@@ -5,6 +5,7 @@ import { useState } from 'react';
 import UpdateLecture from '../Lectures/UpdateLecture';
 import DeleteLecture from '../Lectures/DeleteLecture';
 import { Lectures } from '@/interfaces/Lectures';
+import ViewLecture from '../Lectures/ViewLecture';
 
 const LectureView = ({
   lecture,
@@ -39,8 +40,6 @@ const LectureView = ({
   };
 
   const [mouseHover, setMouseHover] = useState(false);
-
-  console.log(lecture.transcodingjob?.status);
 
   if (isDragging) {
     return (
@@ -112,7 +111,8 @@ const LectureView = ({
               </div>
               {mouseHover && (
                 <div className="flex items-center space-x-3.5 -mt-20">
-                  {/* Update Module */}
+                  <ViewLecture Lecture={lecture} VideoId={lecture.video_id} />
+                  {/* Update Lecture */}
                   <UpdateLecture
                     lectureId={lecture.id}
                     courseId={Number(courseId)}
