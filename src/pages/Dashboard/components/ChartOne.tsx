@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import DatePicker from './DatePicker';
 import { ApexOptions } from 'apexcharts';
+import axios from 'axios';
+import { useToast } from '@/components/ui/use-toast';
 
 const options: ApexOptions = {
   legend: {
@@ -78,7 +80,7 @@ const options: ApexOptions = {
     },
   },
   xaxis: {
-    type: 'category',
+    type: 'datetime',
     categories: [],
     axisBorder: {
       show: false,
@@ -88,7 +90,7 @@ const options: ApexOptions = {
     },
     labels: {
       rotate: -45,
-      formatter: (value: string) => new Date(value).toLocaleDateString(),
+      formatter: (value: string) => value,
     },
   },
   yaxis: {
@@ -123,23 +125,30 @@ const ChartOne: React.FC = () => {
 
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Build query parameters based on start and end dates
         let queryParams = '';
         if (startDate)
-          queryParams += `start_date=${startDate.toISOString().split('T')[0]}`;
+          queryParams += `startDate=${startDate.toISOString().split('T')[0]}`;
         if (endDate)
-          queryParams += `&end_date=${endDate.toISOString().split('T')[0]}`;
+          queryParams += `&endDate=${endDate.toISOString().split('T')[0]}`;
 
-        // Replace this with your actual API endpoint
-        const response = await fetch(`/api/sales-data?${queryParams}`);
-        const data = await response.json();
-
-        const filteredData = data.day_by_day_sales;
-
+        const response = await axios.get(
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }analytics/salesreport?${queryParams}`,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem(
+                'Authorization',
+              )}`,
+            },
+          },
+        );
+        const filteredData = response.data.day_by_day_sales;
         setState({
           series: [
             {
@@ -147,10 +156,16 @@ const ChartOne: React.FC = () => {
               data: filteredData.map((entry: any) => Number(entry.total_sales)),
             },
           ],
-          categories: filteredData.map((entry: any) => entry.date),
+          categories: filteredData.map((entry: any) =>
+            new Date(entry.date).toLocaleDateString(),
+          ),
         });
       } catch (error) {
         console.error('Error fetching sales data:', error);
+        toast({
+          title: 'Error fetching sales data',
+          variant: 'destructive',
+        });
       }
     };
 
@@ -161,40 +176,28 @@ const ChartOne: React.FC = () => {
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
       <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
         <div className="flex w-full flex-wrap gap-3 sm:gap-5">
-          <div className="flex min-w-47.5">
+          <div className="flex min-w-47.5 shadow-md px-2 rounded-md">
             <span className="mt-1 mr-2 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-primary">
               <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-primary"></span>
             </span>
-            <div className="w-full">
-              <p className="font-semibold text-primary">Total Revenue</p>
-              <p className="text-sm font-medium">
-                {startDate && endDate
-                  ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
-                  : 'Select a Date Range'}
-              </p>
+            <div className="flex gap-4   ">
+              <div className="w-max">
+                <p className="font-semibold text-primary">Total Revenue</p>
+                <p className="text-sm font-medium">
+                  {startDate && endDate
+                    ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+                    : 'Select a Date Range'}
+                </p>
+              </div>
+              <div className="mb-4">
+                <DatePicker
+                  onStartDateChange={(date) => setStartDate(date)}
+                  onEndDateChange={(date) => setEndDate(date)}
+                />
+              </div>
             </div>
           </div>
         </div>
-        <div className="flex w-full max-w-45 justify-end">
-          <div className="inline-flex items-center rounded-md bg-whiter p-1.5 dark:bg-meta-4">
-            <button className="rounded bg-white py-1 px-3 text-xs font-medium text-black shadow-card hover:bg-white hover:shadow-card dark:bg-boxdark dark:text-white dark:hover:bg-boxdark">
-              Day
-            </button>
-            <button className="rounded py-1 px-3 text-xs font-medium text-black hover:bg-white hover:shadow-card dark:text-white dark:hover:bg-boxdark">
-              Week
-            </button>
-            <button className="rounded py-1 px-3 text-xs font-medium text-black hover:bg-white hover:shadow-card dark:text-white dark:hover:bg-boxdark">
-              Month
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <DatePicker
-          onStartDateChange={(date) => setStartDate(date)}
-          onEndDateChange={(date) => setEndDate(date)}
-        />
       </div>
 
       <div>
