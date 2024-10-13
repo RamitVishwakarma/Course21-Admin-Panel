@@ -80,7 +80,7 @@ const options: ApexOptions = {
     },
   },
   xaxis: {
-    type: 'datetime',
+    type: 'category',
     categories: [],
     axisBorder: {
       show: false,
@@ -148,6 +148,7 @@ const ChartOne: React.FC = () => {
             },
           },
         );
+        console.log(response.data);
         const filteredData = response.data.day_by_day_sales;
         setState({
           series: [

@@ -15,6 +15,8 @@ import {
 } from './utils/Lazyloading';
 import { Toaster } from './components/ui/toaster';
 import Dashboard from './pages/Dashboard/Dashboard';
+import QuizCreationContainer from './components/quiz/QuizCreationContainer';
+import QuizCreate from './components/quiz/Page';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -99,12 +101,22 @@ function App() {
               </>
             }
           />
+
           <Route
             path="dashboard"
             element={
               <>
                 <PageTitle title="Course21 | Dashboard" />
                 <Dashboard />
+              </>
+            }
+          />
+          <Route
+            path="quiz-create"
+            element={
+              <>
+                <PageTitle title="Course21 | Quiz-Create" />
+                <QuizCreate />
               </>
             }
           />
