@@ -7,6 +7,9 @@ import { useForm } from 'react-hook-form';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { useState } from 'react';
 import { Controller } from 'react-hook-form';
+import DefaultLayout from '@/layout/DefaultLayout';
+import axios from 'axios';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Quiz {
   title: string;
@@ -62,6 +65,7 @@ const questionTypes = [
 ];
 
 const QuizCreate = () => {
+  const { toast } = useToast();
   const { handleSubmit, control, register } = useForm({
     defaultValues: {
       title: '',
@@ -93,8 +97,25 @@ const QuizCreate = () => {
       title: data.title,
       questions: updatedQuestions,
     };
-
     console.log('Quiz payload:', quizPayload);
+    axios
+      .post(`${import.meta.env.VITE_BACKEND_URL}quiz`, quizPayload, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('Authorization')}`,
+        },
+      })
+      .then((res) => {
+        // console.log(res);
+        toast({
+          title: 'Quiz created successfully',
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: 'Quiz creation failed',
+          variant: 'destructive',
+        });
+      });
   };
 
   const renderQuestionForm = (question: any, index: number) => {
@@ -121,66 +142,77 @@ const QuizCreate = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="flex flex-col gap-10">
-        {/* Quiz Title */}
-        <Input
-          {...register('title')}
-          placeholder="Quiz Title"
-          className="w-full mb-4"
-        />
+    <DefaultLayout>
+      <form className="size-full" onSubmit={handleSubmit(onSubmit)}>
+        <div className="flex flex-col gap-10">
+          {/* Quiz Title */}
+          <Input
+            {...register('title')}
+            placeholder="Quiz Title"
+            className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+          />
 
-        {/* ShadCN Tabs to organize questions */}
-        <Tabs defaultValue="question-0">
-          <TabsList className="mb-4">
-            {questions.map((_, index) => (
-              <TabsTrigger key={index} value={`question-${index}`}>
-                Question {index + 1}
-              </TabsTrigger>
+          {/* ShadCN Tabs to organize questions */}
+          <Tabs defaultValue="question-0" className="flex flex-col gap-4">
+            <TabsList className="flex flex-wrap items-center min-h-28 overflow-auto p-0 gap-2">
+              {questions.map((_, index) => (
+                <TabsTrigger
+                  className="dark:data-[state=active]:bg-meta-3  data-[state=active]:bg-meta-3  data-[state=active]:text-white dark:ata-[state=active]:text-white data-[state=active]:rounded-lg dark:bg-meta-4 bg-meta-9 dark:text-white text-meta-4 size-8"
+                  key={index}
+                  value={`question-${index}`}
+                >
+                  {index + 1}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {/* Each tab content for the question */}
+            {questions.map((question, index) => (
+              <TabsContent className="" key={index} value={`question-${index}`}>
+                <div className="border-[0.5px] rounded-lg p-4 mt-4">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Question {index + 1}
+                  </h3>
+
+                  {/* Dropdown to select question type */}
+                  <select
+                    value={question.type}
+                    onChange={(e) => updateQuestionType(index, e.target.value)}
+                    className="mb-4 py-2 px-4 border rounded border-stroke dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                  >
+                    {questionTypes.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Render form based on the question type */}
+                  {renderQuestionForm(question, index)}
+                </div>
+              </TabsContent>
             ))}
+          </Tabs>
+
+          {/* Submit Quiz */}
+          <div className="w-full flex gap-4 sticky bottom-0 flex-row-reverse">
+            <button
+              type="submit"
+              className="bg-meta-5 flex-1 text-white px-4 py-2 rounded-xl"
+            >
+              Submit Quiz
+            </button>
             <button
               type="button"
               onClick={addQuestion}
-              className="ml-4 bg-green-500 text-white px-4 py-2 rounded"
+              className="bg-meta-3 flex-1 text-white px-4 py-2 rounded-xl"
             >
               Add Question
             </button>
-          </TabsList>
-
-          {/* Each tab content for the question */}
-          {questions.map((question, index) => (
-            <TabsContent key={index} value={`question-${index}`}>
-              <div className="border rounded p-4 mt-4">
-                <h3 className="text-lg font-semibold mb-4">
-                  Question {index + 1}
-                </h3>
-
-                {/* Dropdown to select question type */}
-                <select
-                  value={question.type}
-                  onChange={(e) => updateQuestionType(index, e.target.value)}
-                  className="mb-4 p-2 border rounded"
-                >
-                  {questionTypes.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Render form based on the question type */}
-                {renderQuestionForm(question, index)}
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
-
-        {/* Submit Quiz */}
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 mt-4">
-          Submit Quiz
-        </button>
-      </div>
-    </form>
+          </div>
+        </div>
+      </form>
+    </DefaultLayout>
   );
 };
 
@@ -197,6 +229,7 @@ const TrueFalseQuestion = ({
     <Textarea
       {...control.register(`questions[${questionIndex}].content.question`)}
       placeholder="Enter the question here"
+      className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
     />
     <div>Set correct answer</div>
 
@@ -235,6 +268,7 @@ const MultipleChoiceQuestion = ({
   <div>
     <Textarea
       {...control.register(`questions[${questionIndex}].content.question`)}
+      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
       placeholder="Enter the question here"
     />
     <div>Set correct answer</div>
@@ -253,7 +287,7 @@ const MultipleChoiceQuestion = ({
                 {...control.register(
                   `questions[${questionIndex}].content.options[${optionIndex}]`,
                 )}
-                className="w-1/2"
+                className="w-[80%] rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                 type="text"
                 placeholder={`Option ${optionIndex + 1}`}
               />
@@ -285,12 +319,14 @@ const ShortAnswerQuestion = ({
     <Textarea
       {...control.register(`questions[${questionIndex}].content.question`)}
       placeholder="Enter the question here"
+      className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
     />
     <div>Set correct answer</div>
     <Input
       {...control.register(`questions[${questionIndex}].content.correctAnswer`)}
       type="text"
       placeholder="Correct answer"
+      className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
     />
   </div>
 );
@@ -308,6 +344,7 @@ const MultipleAnswerQuestion = ({
     <Textarea
       {...control.register(`questions[${questionIndex}].content.question`)}
       placeholder="Enter the question here"
+      className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
     />
     <div>Set correct answer</div>
     <div className="flex flex-col gap-2">
@@ -317,7 +354,7 @@ const MultipleAnswerQuestion = ({
             {...control.register(
               `questions[${questionIndex}].content.options[${optionIndex}]`,
             )}
-            className="w-1/2"
+            className="w-[90%] rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
             type="text"
             placeholder={`Option ${optionIndex + 1}`}
           />
@@ -347,6 +384,7 @@ const MatchingAnswerQuestion = ({
     <Textarea
       {...control.register(`questions[${questionIndex}].content.question`)}
       placeholder="Enter the question here"
+      className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
     />
     <div>Set correct matches</div>
     <div className="flex flex-col gap-2">
@@ -356,7 +394,7 @@ const MatchingAnswerQuestion = ({
             {...control.register(
               `questions[${questionIndex}].content.options.option_${optionIndex}`,
             )}
-            className="w-1/2"
+            className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
             type="text"
             placeholder={`Option ${optionIndex + 1}`}
           />
@@ -364,7 +402,7 @@ const MatchingAnswerQuestion = ({
             {...control.register(
               `questions[${questionIndex}].content.correctAnswer.match_${optionIndex}`,
             )}
-            className="w-1/2"
+            className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
             type="text"
             placeholder={`Match ${optionIndex + 1}`}
           />
