@@ -16,7 +16,7 @@ const ManageRole = () => {
       .get(`${import.meta.env.VITE_BACKEND_URL}roles`)
       .then((res) => {
         setRoles(res.data);
-        setLoading(false);
+        setTimeout(() => setLoading(false), 1000);
       })
       .catch((err) => {
         console.log(err);

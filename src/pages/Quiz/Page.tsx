@@ -1,10 +1,16 @@
-import { Textarea } from '../ui/textarea';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
-import { Checkbox } from '../ui/checkbox';
+import React from 'react';
+import { Textarea } from '../../components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
+import { Label } from '../../components/ui/label';
+import { Input } from '../../components/ui/input';
+import { Checkbox } from '../../components/ui/checkbox';
 import { useForm } from 'react-hook-form';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '../../components/ui/tabs';
 import { useState } from 'react';
 import { Controller } from 'react-hook-form';
 import DefaultLayout from '@/layout/DefaultLayout';

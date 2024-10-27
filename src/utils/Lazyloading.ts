@@ -15,3 +15,4 @@ export const ManageUser = loadable(
 export const ManageRole = loadable(
   () => import('../pages/Role Manager/ManageRole'),
 );
+export const QuizCreate = loadable(() => import('../pages/Quiz/Page'));
