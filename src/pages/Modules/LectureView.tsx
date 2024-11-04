@@ -110,7 +110,7 @@ const LectureView = ({
                 </div>
               </div>
               {mouseHover && (
-                <div className="flex items-center space-x-3.5 -mt-20">
+                <div className="flex items-center max-md:gap-2 md:space-x-3.5 md:-mt-20 max-md:flex-col">
                   <ViewLecture Lecture={lecture} VideoId={lecture.video_id} />
                   {/* Update Lecture */}
                   <UpdateLecture

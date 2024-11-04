@@ -49,7 +49,7 @@ export default function DeleteUser({
           onClick={openModal}
           className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full hover:bg-meta-1 py-2 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6"
         >
-          <TrashIcon className="h-4 w-4 cursor-pointer" />
+          <TrashIcon className="h-4 w-4 cursor-pointer text-meta-4 dark:text-white" />
         </button>
       </div>
       <Transition appear show={isOpen} as={Fragment}>
