@@ -2,15 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import LogoDark from '../../images/logo/logo-dark.svg';
 import Logo from '../../images/logo/logo.svg';
-import axios from 'axios';
 import { useState } from 'react';
 import { KeyIcon, UserIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import useUserStore from '@/store/userStore';
 
 const SignIn: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { setUser } = useUserStore();
 
   interface FormData {
     email_or_username: string;
@@ -22,30 +23,33 @@ const SignIn: React.FC = () => {
     password: '',
   });
 
+  const demoUser = {
+    email: 'test@example.com',
+    password: '1234',
+  };
+
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
   };
 
   const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(data);
-    axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}user/login`, data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((res) => {
-        sessionStorage.setItem('Authorization', res.data.token);
-        navigate('/admin/course-dashboard');
-      })
-      .catch((err) => {
-        console.log(err);
-        toast({
-          title: 'Login Failed',
-          variant: 'destructive',
-        });
+    if (
+      data.email_or_username === demoUser.email &&
+      data.password === demoUser.password
+    ) {
+      setUser(demoUser.email);
+      toast({
+        title: 'Login Successful',
+        variant: 'success',
       });
+      navigate('/admin/course-dashboard');
+    } else {
+      toast({
+        title: 'Login Failed',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -247,7 +251,7 @@ const SignIn: React.FC = () => {
 
                   <div className="mt-6 text-md text-center">
                     <p>
-                      Don’t have any account?
+                      Don&apos;t have any account?
                       <br />
                       <span className="text-xs">
                         {' '}

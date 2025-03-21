@@ -55,9 +55,11 @@
     "sort-by": "^0.0.2",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
+    "uuidv4": "^6.2.13",
     "video.js": "^8.17.3",
     "videojs-contrib-hls": "^5.15.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/loadable__component": "^5.13.9",

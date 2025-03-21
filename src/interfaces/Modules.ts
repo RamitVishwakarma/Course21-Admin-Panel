@@ -9,5 +9,5 @@ export interface Modules {
   created_at: string;
   updated_at: string;
   delted_at: string;
-  lectures: Lectures[];
+  lectures?: Lectures[];
 }

@@ -15,12 +15,10 @@ export default function UpdateCourse({
   courseId,
   name,
   image_path,
-  refresh,
 }: {
   courseId: number;
   name: string;
   image_path: string;
-  refresh: () => void;
 }) {
   const { toast } = useToast();
 
@@ -64,8 +62,6 @@ export default function UpdateCourse({
         toast({
           title: 'Course Updated Successfully',
         });
-        //refreshing the course page
-        refresh();
         // alert('Course Updated Successfully');
       })
       .catch((err) => {

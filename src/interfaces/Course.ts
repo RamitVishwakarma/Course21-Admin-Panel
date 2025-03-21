@@ -8,8 +8,8 @@ export interface Course {
   manager: string | null;
   price: number;
   image_path: string;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
-  modules: Modules[];
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  modules?: Modules[];
 }

@@ -7,55 +7,29 @@ import DefaultLayout from '../../layout/DefaultLayout';
 import DeleteCourse from './DeleteCourse';
 import CreateCourse from './CreateCourse';
 import UpdateCourse from './UpdateCourse';
-import axios from 'axios';
 import Loader from '../../common/Loader';
+import useUserStore from '@/store/userStore';
 
 const AllCourses: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  //refresh page logic
-  const [refresh, setRefresh] = useState(false);
 
-  const [page, setPage] = useState({
-    pageNo: 0,
-    totalPages: 0,
-  });
+  const { handleNext, handlePrevious, getPaginatedCourses, page } =
+    useUserStore();
 
-  const limit = 10;
-  const [offset, setOffset] = useState(0);
+  const handleNextPage = () => {
+    handleNext();
+    setCourses(getPaginatedCourses());
+  };
+  const handlePreviousPage = () => {
+    handlePrevious();
+    setCourses(getPaginatedCourses());
+  };
 
-  const handleNext = () => {
-    if (page.pageNo < page.totalPages) {
-      setOffset(offset + limit);
-    }
-  };
-  const handlePrevious = () => {
-    if (offset > 0) {
-      setOffset(offset - limit);
-    }
-  };
-  const refreshPage = () => {
-    setRefresh(!refresh);
-  };
   useEffect(() => {
-    axios
-      .get(
-        `${
-          import.meta.env.VITE_BACKEND_URL
-        }courses?limit=${limit}&offset=${offset}`,
-      )
-      .then((res) => {
-        setCourses(res.data.data);
-        setPage({
-          pageNo: res.data.pageNo,
-          totalPages: res.data.totalPages,
-        });
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [refresh, offset]);
+    setCourses(getPaginatedCourses());
+    setLoading(false);
+  }, []);
 
   const dateOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -75,7 +49,7 @@ const AllCourses: React.FC = () => {
         <div className="max-w-full overflow-x-auto">
           {/* Create a course route popup */}
           <div className="text-end pb-6">
-            <CreateCourse refreshPage={refreshPage} />
+            <CreateCourse />
           </div>
           <table className="w-full table-auto">
             <thead className="text-xl">
@@ -149,16 +123,12 @@ const AllCourses: React.FC = () => {
                         <EyeIcon className="h-4 w-4" />
                       </Link>
                       {/* Delete button */}
-                      <DeleteCourse
-                        courseId={course.id}
-                        refresh={refreshPage}
-                      />
+                      <DeleteCourse courseId={course.id} />
                       {/* Update button */}
                       <UpdateCourse
                         courseId={course.id}
                         name={course.name}
                         image_path={course.image_path}
-                        refresh={refreshPage}
                       />
                     </div>
                   </td>
@@ -174,14 +144,14 @@ const AllCourses: React.FC = () => {
         </p>
         <div className="flex gap-2">
           <button
-            onClick={handlePrevious}
+            onClick={handlePreviousPage}
             className="flex items-center justify-center gap-2.5 rounded-md bg-black py-4 px-10 text-center font-medium text-white hover:bg-opacity-60 lg:px-8 xl:px-10"
           >
             <BackwardIcon className="h-5 w-5" />
             <span>Previous</span>
           </button>
           <button
-            onClick={handleNext}
+            onClick={handleNextPage}
             className="flex items-center justify-center gap-2.5 rounded-md bg-black py-4 px-10 text-center font-medium text-white hover:bg-opacity-60 lg:px-8 xl:px-10"
           >
             <span>Next</span>

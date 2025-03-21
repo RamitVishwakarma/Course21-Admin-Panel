@@ -4,13 +4,7 @@ import { Fragment, useState } from 'react';
 import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
 
-export default function DeleteCourse({
-  courseId,
-  refresh,
-}: {
-  courseId: number;
-  refresh: () => void;
-}) {
+export default function DeleteCourse({ courseId }: { courseId: number }) {
   let [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
@@ -31,7 +25,7 @@ export default function DeleteCourse({
         toast({
           title: 'Course deleted successfully',
         });
-        refresh();
+
         closeModal();
       })
       .catch((err) => {
