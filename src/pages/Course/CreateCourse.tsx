@@ -12,11 +12,11 @@ import {
   PlusCircleIcon,
 } from '@heroicons/react/20/solid';
 import { useState } from 'react';
-import useUserStore from '@/store/userStore';
+import { useCourseStore } from '@/store/useCourseStore';
 
 export default function CreateCourse() {
   const { toast } = useToast();
-  const { addCourse } = useUserStore();
+  const addCourse = useCourseStore((state) => state.addCourse);
 
   interface FormData {
     name: string;
@@ -36,47 +36,34 @@ export default function CreateCourse() {
   // Handle form input changes
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.type === 'file') {
-      uploadToCloudinary(e.target.files![0]);
+      handleImageUpload(e.target.files![0]);
       return;
     }
     setData({ ...data, [e.target.name]: e.target.value });
   };
 
-  // Function to upload image to Cloudinary
-  const uploadToCloudinary = async (file: File) => {
+  // Function to handle image upload - now just creates a mock URL
+  const handleImageUpload = async (file: File) => {
     if (!file) return;
 
     setUploading(true);
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = 'Course21';
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', import.meta.env.VITE_CLOUDINARY_API_KEY);
-    formData.append('upload_preset', uploadPreset);
-    formData.append('folder', 'Course21');
 
     try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        },
-      );
-
-      const result = await res.json();
-      if (result.secure_url) {
-        setData((prev) => ({ ...prev, image_path: result.secure_url }));
-        toast({ title: 'Image Uploaded Successfully', variant: 'success' });
-      }
+      // Instead of uploading to Cloudinary, we create a mock URL
+      setTimeout(() => {
+        const mockImagePath = `courses/${Math.random()
+          .toString(36)
+          .substring(2)}.png`;
+        setData((prev) => ({ ...prev, image_path: mockImagePath }));
+        toast({ title: 'Image Uploaded Successfully' });
+        setUploading(false);
+      }, 1000); // Simulate a delay
     } catch (error) {
       toast({
         title: 'Image Upload Failed',
         description: 'Please try again.',
         variant: 'destructive',
       });
-    } finally {
       setUploading(false);
     }
   };
@@ -93,14 +80,26 @@ export default function CreateCourse() {
       return;
     }
 
+    // Add the course to our Zustand store
     addCourse({
-      ...data,
-      updated_at: new Date().toISOString(),
-      created_at: new Date().toISOString(),
+      name: data.name,
+      price: Number(data.price),
+      image_path: data.image_path,
+      prefix: null,
+      validity: null,
+      manager: null,
+      category_id: null,
     });
+
     toast({ title: 'Course Added Successfully' });
-    refreshPage();
+
+    // Close the dialog and reset the form
     setOpen(false);
+    setData({
+      name: '',
+      price: 0,
+      image_path: '',
+    });
   };
 
   return (
@@ -175,11 +174,9 @@ export default function CreateCourse() {
           {/* Preview Image */}
           {data.image_path && (
             <div className="mb-4">
-              <img
-                src={data.image_path}
-                alt="Preview"
-                className="size-60 rounded-lg"
-              />
+              <p className="text-sm text-gray-500 mt-2">
+                Image path: {data.image_path}
+              </p>
             </div>
           )}
 

@@ -1,8 +1,8 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/solid';
-import { Fragment, useState } from 'react';
-import axios from 'axios';
+import { Fragment, useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { useLectureStore } from '@/store/useLectureStore';
 
 export default function DeleteLecture({
   lectureId,
@@ -14,31 +14,43 @@ export default function DeleteLecture({
   let [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
+  // Get delete function from lecture store
+  const deleteLectureFromStore = useLectureStore(
+    (state) => state.deleteLecture,
+  );
+  const fetchLectures = useLectureStore((state) => state.fetchLectures);
+
+  // Ensure lectures are loaded
+  useEffect(() => {
+    fetchLectures();
+  }, [fetchLectures]);
+
   function closeModal() {
     setIsOpen(false);
   }
+
   function openModal() {
     setIsOpen(true);
   }
 
-  const deleteLecture = () => {
-    axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}lectures/${lectureId}`)
-      .then((res) => {
-        console.log(res);
-        toast({
-          title: 'Lecture deleted successfully',
-        });
-        refresh();
-        closeModal();
-      })
-      .catch((err) => {
-        toast({
-          title: 'Lecture deletion failed',
-          variant: 'destructive',
-        });
-        console.log(err);
+  const handleDeleteLecture = () => {
+    try {
+      // Delete the lecture from our store
+      deleteLectureFromStore(lectureId);
+
+      toast({
+        title: 'Lecture deleted successfully',
       });
+
+      refresh();
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Lecture deletion failed',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -94,7 +106,7 @@ export default function DeleteLecture({
 
                   <div className="mt-4">
                     <button
-                      onClick={deleteLecture}
+                      onClick={handleDeleteLecture}
                       className="inline-flex items-center justify-center rounded-md bg-primary py-2 px-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-2 xl:px-6"
                     >
                       Delete

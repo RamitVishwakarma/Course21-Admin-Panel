@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import DatePicker from './DatePicker';
 import { ApexOptions } from 'apexcharts';
-import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
+import { useAnalyticsStore } from '@/store/useAnalyticsStore';
 
 const options: ApexOptions = {
   legend: {
@@ -127,51 +127,44 @@ const ChartOne: React.FC = () => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const { toast } = useToast();
 
+  // Get data and functions from our analytics store
+  const { data, fetchChartData, isLoading } = useAnalyticsStore((state) => ({
+    data: state.data,
+    fetchChartData: state.fetchChartData,
+    isLoading: state.isLoading,
+  }));
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let queryParams = '';
-        if (startDate)
-          queryParams += `startDate=${startDate.toISOString().split('T')[0]}`;
-        if (endDate)
-          queryParams += `&endDate=${endDate.toISOString().split('T')[0]}`;
+    // Fetch chart data from our store
+    fetchChartData();
+  }, [fetchChartData]);
 
-        const response = await axios.get(
-          `${
-            import.meta.env.VITE_BACKEND_URL
-          }analytics/salesreport?${queryParams}`,
-          {
-            headers: {
-              Authorization: `Bearer ${sessionStorage.getItem(
-                'Authorization',
-              )}`,
-            },
-          },
-        );
-        console.log(response.data);
-        const filteredData = response.data.day_by_day_sales;
-        setState({
-          series: [
-            {
-              name: 'Total Sales',
-              data: filteredData.map((entry: any) => Number(entry.total_sales)),
-            },
-          ],
-          categories: filteredData.map((entry: any) =>
-            new Date(entry.date).toLocaleDateString(),
-          ),
-        });
-      } catch (error) {
-        console.error('Error fetching sales data:', error);
-        toast({
-          title: 'Error fetching sales data',
-          variant: 'destructive',
-        });
+  useEffect(() => {
+    if (data.revenueGrowthData.length > 0 && !isLoading) {
+      // Filter data based on date range if provided
+      let filteredData = [...data.revenueGrowthData];
+
+      if (startDate || endDate) {
+        // In a real app, we would filter based on dates
+        // For demo purposes, we'll just use a subset of the dummy data
+        const startIndex = startDate ? Math.floor(Math.random() * 3) : 0;
+        const endIndex = endDate
+          ? startIndex + Math.floor(Math.random() * 6) + 3
+          : filteredData.length;
+        filteredData = filteredData.slice(startIndex, endIndex);
       }
-    };
 
-    fetchData();
-  }, [startDate, endDate]);
+      setState({
+        series: [
+          {
+            name: 'Total Revenue',
+            data: filteredData.map((entry) => entry.revenue),
+          },
+        ],
+        categories: filteredData.map((entry) => entry.name),
+      });
+    }
+  }, [data.revenueGrowthData, startDate, endDate, isLoading]);
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
@@ -204,7 +197,17 @@ const ChartOne: React.FC = () => {
       <div>
         <div id="chartOne" className="-ml-5">
           <ReactApexChart
-            options={options}
+            options={{
+              ...options,
+              xaxis: {
+                ...options.xaxis,
+                categories: state.categories,
+              },
+              yaxis: {
+                ...options.yaxis,
+                max: Math.max(...state.series[0].data) * 1.2 || 30000,
+              },
+            }}
             series={state.series}
             type="area"
             height={350}

@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IdentificationIcon } from '@heroicons/react/20/solid';
 import { useState } from 'react';
-import axios from 'axios';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { AtSymbolIcon, KeyIcon, UserIcon } from '@heroicons/react/24/solid';
 import Role from '../../interfaces/Roles';
 import { SelectRole } from './Select';
+import { useUserStore } from '@/store/useUserStore';
 
 export default function CreateUser({
   refreshPage,
@@ -28,16 +28,26 @@ export default function CreateUser({
     email: string;
     password: string;
   }
+
   const [data, setData] = useState<FormData>({
     name: '',
     username: '',
     email: '',
     password: '',
   });
+
   // dialog state
   const [open, setOpen] = useState(false);
-
   const { toast } = useToast();
+
+  // Get addUser function from user store
+  const addUser = useUserStore((state) => state.addUser);
+  const fetchUsers = useUserStore((state) => state.fetchUsers);
+
+  // Ensure users are loaded
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -45,27 +55,42 @@ export default function CreateUser({
 
   const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(data);
-    axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}user/register`, data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((res) => {
-        console.log(res);
-        toast({
-          title: 'User Added Successfully',
-        });
-        refreshPage();
-      })
-      .catch((err) => {
-        console.log(err);
-        toast({
-          title: 'User Addition Failed',
-        });
+
+    try {
+      // Add the user to our store
+      addUser({
+        name: data.name,
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        // Default values, would be updated by the SelectRole component
+        role_id: 0,
+        role_name: '',
       });
+
+      toast({
+        title: 'User Added Successfully',
+      });
+
+      // Reset form fields
+      setData({
+        name: '',
+        username: '',
+        email: '',
+        password: '',
+      });
+
+      refreshPage();
+      setOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'User Addition Failed',
+        variant: 'destructive',
+      });
+    }
   };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -90,6 +115,7 @@ export default function CreateUser({
                 onChange={handleFormData}
                 placeholder="Enter Name"
                 className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                required
               />
               <span className="absolute right-4 top-4">
                 <UserIcon className="w-6 h-6 text-bodydark" />
@@ -109,6 +135,7 @@ export default function CreateUser({
                 onChange={handleFormData}
                 placeholder="Enter Username"
                 className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                required
               />
               <span className="absolute right-4 top-4">
                 <IdentificationIcon className="w-6 h-6 text-bodydark" />
@@ -122,12 +149,13 @@ export default function CreateUser({
             </label>
             <div className="relative">
               <input
-                type="text"
+                type="email"
                 name="email"
                 value={data.email}
                 onChange={handleFormData}
                 placeholder="Enter Email"
                 className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                required
               />
               <span className="absolute right-4 top-4">
                 <AtSymbolIcon className="w-6 h-6 text-bodydark" />
@@ -147,6 +175,7 @@ export default function CreateUser({
                 onChange={handleFormData}
                 placeholder="Enter Password"
                 className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                required
               />
               <span className="absolute right-4 top-4">
                 <KeyIcon className="w-6 h-6 text-bodydark" />

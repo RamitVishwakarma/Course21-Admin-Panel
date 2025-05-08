@@ -1,5 +1,4 @@
 import React from 'react';
-import axios from 'axios';
 import { useState } from 'react';
 import { IdentificationIcon, PencilIcon } from '@heroicons/react/20/solid';
 import {
@@ -10,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
+import { useCourseStore } from '@/store/useCourseStore';
 
 export default function UpdateModule({
   courseId,
@@ -25,6 +25,10 @@ export default function UpdateModule({
   refreshPage: () => void;
 }) {
   const { toast } = useToast();
+
+  // Get updateModule function from Zustand store
+  const updateModule = useCourseStore((state) => state.updateModule);
+
   interface FormData {
     name: string;
     featured_image: File | string;
@@ -49,33 +53,30 @@ export default function UpdateModule({
 
   const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(data);
-    axios
-      .post(
-        `${import.meta.env.VITE_BACKEND_URL}modules/update/${moduleId}`,
-        data,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        },
-      )
-      .then((res) => {
-        console.log(res);
-        toast({
-          title: 'Module Updated Successfully',
-        });
-        refreshPage();
-        // alert('Module Updated Successfully');
-      })
-      .catch((err) => {
-        console.log(err);
-        toast({
-          title: 'Module Update Failed',
-          variant: 'destructive',
-        });
-        // alert('Module Update Failed');
+
+    try {
+      // Update the module using our Zustand store
+      updateModule(moduleId, {
+        name: data.name,
+        image_path:
+          data.featured_image instanceof File
+            ? `modules/${Math.random().toString(36).substring(2)}.png`
+            : image_path,
       });
+
+      toast({
+        title: 'Module Updated Successfully',
+      });
+
+      setOpen(false);
+      refreshPage();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Module Update Failed',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (

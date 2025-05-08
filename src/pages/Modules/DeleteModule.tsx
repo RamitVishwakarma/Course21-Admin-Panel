@@ -1,10 +1,10 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/solid';
 import { Fragment, useState } from 'react';
-import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
+import { useCourseStore } from '@/store/useCourseStore';
 
-export default function DeletModule({
+export default function DeleteModule({
   moduleId,
   refresh,
 }: {
@@ -14,31 +14,35 @@ export default function DeletModule({
   let [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
+  // Get deleteModule function from our Zustand store
+  const deleteModule = useCourseStore((state) => state.deleteModule);
+
   function closeModal() {
     setIsOpen(false);
   }
+
   function openModal() {
     setIsOpen(true);
   }
 
-  const deleteModule = () => {
-    axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}modules/${moduleId}`)
-      .then((res) => {
-        console.log(res);
-        toast({
-          title: 'Module deleted successfully',
-        });
-        refresh();
-        closeModal();
-      })
-      .catch((err) => {
-        toast({
-          title: 'Module deletion failed',
-          variant: 'destructive',
-        });
-        console.log(err);
+  const handleDeleteModule = () => {
+    try {
+      // Use the store to delete the module
+      deleteModule(moduleId);
+
+      toast({
+        title: 'Module deleted successfully',
       });
+
+      refresh();
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Module deletion failed',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -93,7 +97,7 @@ export default function DeletModule({
 
                   <div className="mt-4">
                     <button
-                      onClick={deleteModule}
+                      onClick={handleDeleteModule}
                       className="inline-flex items-center justify-center rounded-md bg-primary py-2 px-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-2 xl:px-6"
                     >
                       Delete

@@ -2,33 +2,31 @@ import React, { useEffect, useState } from 'react';
 import ChartOne from './components/ChartOne';
 import DefaultLayout from '../../layout/DefaultLayout';
 import StatsCard from '@/pages/Dashboard/components/StatsCard';
-import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
 import Loader from '@/common/Loader';
 import TopPerformingCourses from './components/TopPerformingCourses';
+import { useAnalyticsStore } from '@/store/useAnalyticsStore';
 
 const ECommerce: React.FC = () => {
-  const [topPerformingCourses, setTopPerformingCourses] = useState<any>();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
 
+  // Get data and functions from our analytics store
+  const { data, fetchAnalytics, isLoading } = useAnalyticsStore((state) => ({
+    data: state.data,
+    fetchAnalytics: state.fetchAnalytics,
+    isLoading: state.isLoading,
+  }));
+
   useEffect(() => {
-    axios
-      .get(
-        `${import.meta.env.VITE_BACKEND_URL}analytics/trends?limit=5&offset=0`,
-      )
-      .then((response) => {
-        setTopPerformingCourses(response.data);
-        setLoading(false);
-        console.log(response.data);
-      })
-      .catch(() => {
-        toast({
-          title: 'An error occurred while fetching data',
-          variant: 'destructive',
-        });
-      });
-  }, []);
+    // Fetch all analytics data from our store
+    fetchAnalytics();
+
+    // Set loading to false when data is loaded
+    if (!isLoading && data.topCourses.length > 0) {
+      setLoading(false);
+    }
+  }, [fetchAnalytics, isLoading, data.topCourses]);
 
   return (
     <>
@@ -43,7 +41,7 @@ const ECommerce: React.FC = () => {
               <h1 className="text-2xl font-bold dark:text-white text-black">
                 Top Performing Courses
               </h1>
-              <TopPerformingCourses courses={topPerformingCourses} />
+              <TopPerformingCourses courses={data.topCourses} />
             </div>
           </div>
         </DefaultLayout>

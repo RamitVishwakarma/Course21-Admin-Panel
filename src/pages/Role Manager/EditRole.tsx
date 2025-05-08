@@ -9,9 +9,9 @@ import Permission from '@/interfaces/Permission';
 import Role from '@/interfaces/Roles';
 import { PencilIcon } from '@heroicons/react/20/solid';
 import { useState } from 'react';
-import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
 import React from 'react';
+import { useUserStore } from '@/store/useUserStore';
 
 const EditRole = ({
   role,
@@ -25,41 +25,48 @@ const EditRole = ({
   const [open, setOpen] = useState(false);
   const [selectedPerms, setSelectedPerms] = useState<number[]>([]);
   const { toast } = useToast();
+
+  // Get updateRolePermissions function from user store
+  const updateRolePermissions = useUserStore(
+    (state) => state.updateRolePermissions,
+  );
+
   const handleUpdateRole = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedPerms([...selectedPerms, parseInt(e.target.id)]);
+    const permId = parseInt(e.target.id);
+
+    if (e.target.checked) {
+      // Add permission if checked and not already in array
+      if (!selectedPerms.includes(permId)) {
+        setSelectedPerms([...selectedPerms, permId]);
+      }
+    } else {
+      // Remove permission if unchecked
+      setSelectedPerms(selectedPerms.filter((id) => id !== permId));
+    }
   };
 
   const updateRole = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    axios
-      .post(
-        `${import.meta.env.VITE_BACKEND_URL}permissions/role/bulk-assign`,
-        {
-          role_id: role.id,
-          permissions: selectedPerms,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem('Authorization')}`,
-          },
-        },
-      )
-      .then((res) => {
-        console.log(res);
-        refreshPage();
-        setOpen(false);
-        toast({
-          title: 'Permissions updated successfully',
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        toast({
-          title: 'Failed to update permissions',
-          variant: 'destructive',
-        });
+
+    try {
+      // Update the role permissions in our store
+      updateRolePermissions(role.id, selectedPerms);
+
+      toast({
+        title: 'Permissions updated successfully',
       });
+
+      refreshPage();
+      setOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Failed to update permissions',
+        variant: 'destructive',
+      });
+    }
   };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

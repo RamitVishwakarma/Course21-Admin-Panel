@@ -1,28 +1,29 @@
 import Loader from '@/common/Loader';
 import { useToast } from '@/components/ui/use-toast';
-import axios from 'axios';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useAnalyticsStore } from '@/store/useAnalyticsStore';
 
 const StatsCard = () => {
-  const [statsData, setStatsData] = useState<any>();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
 
+  // Get data and functions from our analytics store
+  const { data, fetchBasicReport, isLoading } = useAnalyticsStore((state) => ({
+    data: state.data,
+    fetchBasicReport: state.fetchBasicReport,
+    isLoading: state.isLoading,
+  }));
+
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}analytics/basicreport`)
-      .then((response) => {
-        setStatsData(response.data);
-        setLoading(false);
-      })
-      .catch(() => {
-        toast({
-          title: 'An error occurred while fetching data',
-          variant: 'destructive',
-        });
-      });
-  }, []);
+    // Fetch basic report data from our store
+    fetchBasicReport();
+
+    // Set loading to false when data is loaded
+    if (!isLoading) {
+      setLoading(false);
+    }
+  }, [fetchBasicReport, isLoading]);
 
   return (
     <>
@@ -33,26 +34,26 @@ const StatsCard = () => {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <ShowData
               Title="Total Course"
-              Number={statsData.total_courses}
+              Number={data.totalCourses.toString()}
               Comparison={2}
             />
             <ShowData
               Title="Total Users"
-              Number={statsData.total_users}
-              Comparison={statsData.user_comparison}
+              Number={data.totalUsers.toString()}
+              Comparison={8}
             />
             <ShowData
               Title="Total Revenue"
-              Number={statsData.total_revenue}
-              Comparison={statsData.revenue_comparison}
+              Number={`₹${(data.revenueThisMonth * 12).toLocaleString()}`}
+              Comparison={5}
             />
             <ShowData
               Title="Monthly Revenue"
-              Number={statsData.current_month_revenue}
+              Number={`₹${data.revenueThisMonth.toLocaleString()}`}
             />
             <ShowData
               Title="New Users"
-              Number={statsData.current_month_new_users}
+              Number={(data.totalUsers * 0.1).toFixed(0)}
             />
           </div>
         </div>

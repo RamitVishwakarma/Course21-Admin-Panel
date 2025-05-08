@@ -8,28 +8,53 @@ import DeleteCourse from './DeleteCourse';
 import CreateCourse from './CreateCourse';
 import UpdateCourse from './UpdateCourse';
 import Loader from '../../common/Loader';
-import useUserStore from '@/store/userStore';
+import { useCourseStore } from '@/store/useCourseStore';
+
+const ITEMS_PER_PAGE = 10; // Number of courses per page
 
 const AllCourses: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
-  const { handleNext, handlePrevious, getPaginatedCourses, page } =
-    useUserStore();
+  // Get courses from Zustand store
+  const { courses: allCourses, fetchCourses } = useCourseStore();
+
+  const getPaginatedCourses = () => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return allCourses.slice(startIndex, endIndex);
+  };
 
   const handleNextPage = () => {
-    handleNext();
-    setCourses(getPaginatedCourses());
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
   };
+
   const handlePreviousPage = () => {
-    handlePrevious();
-    setCourses(getPaginatedCourses());
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   useEffect(() => {
+    // Load courses if they haven't been loaded yet
+    if (allCourses.length === 0) {
+      fetchCourses();
+    } else {
+      // Calculate total pages
+      setTotalPages(Math.ceil(allCourses.length / ITEMS_PER_PAGE));
+      setCourses(getPaginatedCourses());
+      setLoading(false);
+    }
+  }, [allCourses, fetchCourses]);
+
+  // Update displayed courses when page changes
+  useEffect(() => {
     setCourses(getPaginatedCourses());
-    setLoading(false);
-  }, []);
+  }, [currentPage, allCourses]);
 
   const dateOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -140,19 +165,21 @@ const AllCourses: React.FC = () => {
       </div>
       <div className="flex justify-between items-center mt-5">
         <p className="text-black dark:text-white">
-          Showing Page {page.pageNo} of {page.totalPages}
+          Showing Page {currentPage} of {totalPages}
         </p>
         <div className="flex gap-2">
           <button
             onClick={handlePreviousPage}
-            className="flex items-center justify-center gap-2.5 rounded-md bg-black py-4 px-10 text-center font-medium text-white hover:bg-opacity-60 lg:px-8 xl:px-10"
+            disabled={currentPage === 1}
+            className="flex items-center justify-center gap-2.5 rounded-md bg-black py-4 px-10 text-center font-medium text-white hover:bg-opacity-60 disabled:opacity-50 lg:px-8 xl:px-10"
           >
             <BackwardIcon className="h-5 w-5" />
             <span>Previous</span>
           </button>
           <button
             onClick={handleNextPage}
-            className="flex items-center justify-center gap-2.5 rounded-md bg-black py-4 px-10 text-center font-medium text-white hover:bg-opacity-60 lg:px-8 xl:px-10"
+            disabled={currentPage === totalPages}
+            className="flex items-center justify-center gap-2.5 rounded-md bg-black py-4 px-10 text-center font-medium text-white hover:bg-opacity-60 disabled:opacity-50 lg:px-8 xl:px-10"
           >
             <span>Next</span>
             <ForwardIcon className="h-5 w-5" />

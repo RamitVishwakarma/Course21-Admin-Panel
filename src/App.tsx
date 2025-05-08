@@ -65,19 +65,10 @@ function App() {
             }
           />
           <Route
-            path="view-course/:id/view-module/:id"
+            path="view-course/:courseId/view-module/:moduleId"
             element={
               <>
                 <PageTitle title="Module | View " />
-                <ViewModule />
-              </>
-            }
-          />
-          <Route
-            path="view-course/:id/view-module/:id"
-            element={
-              <>
-                <PageTitle title="User | Manage " />
                 <ViewModule />
               </>
             }

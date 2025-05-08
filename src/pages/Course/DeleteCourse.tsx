@@ -1,12 +1,15 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/solid';
 import { Fragment, useState } from 'react';
-import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
+import { useCourseStore } from '@/store/useCourseStore';
 
 export default function DeleteCourse({ courseId }: { courseId: number }) {
   let [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+
+  // Get the deleteCourse function from our Zustand store
+  const deleteCourse = useCourseStore((state) => state.deleteCourse);
 
   function closeModal() {
     setIsOpen(false);
@@ -16,25 +19,26 @@ export default function DeleteCourse({ courseId }: { courseId: number }) {
     setIsOpen(true);
   }
 
-  const deleteCourse = () => {
-    // console.log(courseId);
-    axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}courses/${courseId}`)
-      .then((res) => {
-        console.log(res);
-        toast({
-          title: 'Course deleted successfully',
-        });
+  const handleDeleteCourse = () => {
+    try {
+      // Delete course from the Zustand store
+      deleteCourse(courseId);
 
-        closeModal();
-      })
-      .catch((err) => {
-        toast({
-          title: 'Course deletion failed',
-          variant: 'destructive',
-        });
-        console.log(err);
+      toast({
+        title: 'Course deleted successfully',
       });
+
+      closeModal();
+
+      // Force page refresh to show updated data
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Course deletion failed',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -74,7 +78,7 @@ export default function DeleteCourse({ courseId }: { courseId: number }) {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-black p-6 text-left align-middle shadow-xl transition-all ">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-black p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
                     className="text-lg font-medium leading-6 dark:text-white"
@@ -89,7 +93,7 @@ export default function DeleteCourse({ courseId }: { courseId: number }) {
 
                   <div className="mt-4">
                     <button
-                      onClick={deleteCourse}
+                      onClick={handleDeleteCourse}
                       className="inline-flex items-center justify-center rounded-md bg-primary py-2 px-4 text-center font-medium text-white hover:bg-opacity-90 lg:px-2 xl:px-6"
                     >
                       Delete

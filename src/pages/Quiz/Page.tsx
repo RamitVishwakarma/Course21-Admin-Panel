@@ -11,11 +11,12 @@ import {
   TabsTrigger,
   TabsContent,
 } from '../../components/ui/tabs';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 import DefaultLayout from '@/layout/DefaultLayout';
-import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
+import { useQuizStore } from '@/store/useQuizStore';
+import { useParams } from 'react-router-dom';
 
 interface Quiz {
   title: string;
@@ -71,6 +72,7 @@ const questionTypes = [
 ];
 
 const QuizCreate = () => {
+  const { moduleId } = useParams<{ moduleId: string }>();
   const { toast } = useToast();
   const { handleSubmit, control, register } = useForm({
     defaultValues: {
@@ -78,6 +80,15 @@ const QuizCreate = () => {
       questions: [{ type: 'true_false', content: {} }],
     },
   });
+
+  // Get addQuiz function from our Zustand store
+  const addQuiz = useQuizStore((state) => state.addQuiz);
+  const fetchQuizzes = useQuizStore((state) => state.fetchQuizzes);
+
+  // Ensure quizzes are loaded
+  useEffect(() => {
+    fetchQuizzes();
+  }, [fetchQuizzes]);
 
   const [questions, setQuestions] = useState([
     { type: 'true_false', content: {} },
@@ -99,29 +110,52 @@ const QuizCreate = () => {
       ...data.questions[index].content,
     }));
 
-    const quizPayload = {
-      title: data.title,
-      questions: updatedQuestions,
-    };
-    console.log('Quiz payload:', quizPayload);
-    axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}quiz`, quizPayload, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('Authorization')}`,
-        },
-      })
-      .then((res) => {
-        // console.log(res);
-        toast({
-          title: 'Quiz created successfully',
-        });
-      })
-      .catch((err) => {
-        toast({
-          title: 'Quiz creation failed',
-          variant: 'destructive',
-        });
+    try {
+      // Map the form data to our quiz store format
+      const quizQuestions = updatedQuestions.map((q) => {
+        // Prepare options array for multiple choice questions
+        const options = [];
+        if (q.type === 'multiple_choice' && q.options) {
+          for (let i = 0; i < q.options.length; i++) {
+            if (q.options[i]) {
+              options.push({
+                id: i + 1,
+                text: q.options[i],
+                correct: q.correctAnswer === `${i + 1}`,
+              });
+            }
+          }
+        }
+
+        return {
+          quiz_id: 0, // Will be set by the store
+          question: q.question,
+          type: q.type,
+          options: options,
+        };
       });
+
+      // Add the quiz to our store
+      addQuiz({
+        title: data.title,
+        description: 'Quiz created with the quiz editor',
+        module_id: parseInt(moduleId || '0'),
+        questions: quizQuestions,
+      });
+
+      toast({
+        title: 'Quiz created successfully',
+      });
+
+      // Reset form or redirect
+      window.location.href = `/admin/modules/${moduleId}`;
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Quiz creation failed',
+        variant: 'destructive',
+      });
+    }
   };
 
   const renderQuestionForm = (question: any, index: number) => {

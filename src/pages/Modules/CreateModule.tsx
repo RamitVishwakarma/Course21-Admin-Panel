@@ -1,7 +1,6 @@
 import React from 'react';
 import { IdentificationIcon } from '@heroicons/react/20/solid';
 import { useState } from 'react';
-import axios from 'axios';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { PlusCircleIcon } from '@heroicons/react/20/solid';
 import { useToast } from '@/components/ui/use-toast';
+import { useCourseStore } from '@/store/useCourseStore';
 
 export default function CreateModule({
   courseId,
@@ -35,6 +35,9 @@ export default function CreateModule({
   //dialog state
   const [open, setOpen] = useState(false);
 
+  // Get the addModule function from our Zustand store
+  const addModule = useCourseStore((state) => state.addModule);
+
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.type === 'file') {
       setData({ ...data, [e.target.name]: e.target.files![0] });
@@ -45,29 +48,34 @@ export default function CreateModule({
 
   const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(data);
-    axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}modules`, data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((res) => {
-        console.log(res);
-        toast({
-          title: 'Module Added Successfully',
-        });
-        refreshPage();
-        // alert('Module Added Successfully');
-      })
-      .catch((err) => {
-        console.log(err);
-        toast({
-          title: 'Module Addition Failed',
-        });
-        // alert('Module Addition Failed');
+
+    try {
+      // Instead of making an API call, use our store
+      addModule(courseId, {
+        name: data.name,
+        course_id: courseId,
+        image_path:
+          data.featured_image instanceof File
+            ? `modules/${Math.random().toString(36).substring(2)}.png`
+            : null,
+        index: null,
       });
+
+      toast({
+        title: 'Module Added Successfully',
+      });
+
+      setOpen(false);
+      refreshPage();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Module Addition Failed',
+        variant: 'destructive',
+      });
+    }
   };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
 import {
   DndContext,
   DragEndEvent,
@@ -20,32 +19,56 @@ import DefaultLayout from '../../../layout/DefaultLayout';
 import CreateModule from '../../Modules/CreateModule';
 import Loader from '../../../common/Loader';
 import { useToast } from '@/components/ui/use-toast';
+import { useCourseStore } from '@/store/useCourseStore';
 
 const ViewCourse: React.FC = () => {
-  const id = useParams().id;
+  const id = Number(useParams().id);
   const [course, setCourse] = useState<Course>();
   const [modules, setModules] = useState<Modules[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refresh, setRefresh] = useState(false);
   const { toast } = useToast();
+
+  // Get data and functions from our Zustand store
+  const { courses, fetchCourses, updateModuleSequence } = useCourseStore(
+    (state) => ({
+      courses: state.courses,
+      fetchCourses: state.fetchCourses,
+      updateModuleSequence: state.updateModuleSequence,
+    }),
+  );
+
   // Getting an array of module ids
   const moduleId = useMemo(() => modules.map((module) => module.id), [modules]);
   // getting the active module while dragging also for overlay
   const [activeModule, setActiveModule] = useState<Modules | null>(null);
 
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}courses/${id}`)
-      .then((res) => {
-        console.log(res.data);
-        setCourse(res.data.data);
-        setModules(res.data.data.modules);
+    // Load courses if not already loaded
+    if (courses.length === 0) {
+      fetchCourses();
+      setLoading(true);
+    } else {
+      // Find the course with the matching ID
+      const foundCourse = courses.find((c) => c.id === id);
+      if (foundCourse) {
+        setCourse(foundCourse);
+
+        // Sort modules by index
+        const sortedModules = [...foundCourse.modules].sort((a, b) => {
+          // Handle null indexes by placing them at the end
+          if (a.index === null) return 1;
+          if (b.index === null) return -1;
+          return a.index - b.index;
+        });
+
+        setModules(sortedModules);
         setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [id, refresh]);
+      } else {
+        setLoading(false);
+      }
+    }
+  }, [id, courses, fetchCourses, refresh]);
 
   const refreshPage = () => {
     setRefresh(!refresh);
@@ -59,23 +82,26 @@ const ViewCourse: React.FC = () => {
     }),
   );
 
-  const updateModuleSequence = (updatedModuleIds: number[]) => {
-    axios
-      .post(`${import.meta.env.VITE_BACKEND_URL}courses/update-sequence`, {
-        course_id: Number(id),
-        module_ids: updatedModuleIds,
-      })
-      .then((res) => {
-        toast({
-          title: res.data.message,
-        });
-      })
-      .catch((err) => {
-        toast({
-          title: err.response.data.message,
-          variant: 'destructive',
-        });
+  const handleUpdateModuleSequence = (updatedModuleIds: number[]) => {
+    try {
+      // Create array of objects with id and index for the store update
+      const moduleSequence = updatedModuleIds.map((id, index) => ({
+        id,
+        index: index + 1, // 1-based index
+      }));
+
+      // Update sequence in Zustand store
+      updateModuleSequence(moduleSequence);
+
+      toast({
+        title: 'Module sequence updated successfully',
       });
+    } catch (err) {
+      toast({
+        title: 'Failed to update module sequence',
+        variant: 'destructive',
+      });
+    }
   };
 
   return loading ? (
@@ -89,7 +115,7 @@ const ViewCourse: React.FC = () => {
         <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-stroke/20 md:px-6 2xl:px-7.5">
           <div className="flex text-xl items-center justify-between">
             <p className="font-medium text-3xl">Modules</p>
-            <CreateModule courseId={Number(id)} refreshPage={refreshPage} />
+            <CreateModule courseId={id} refreshPage={refreshPage} />
           </div>
         </div>
         <DndContext
@@ -104,7 +130,7 @@ const ViewCourse: React.FC = () => {
                   module={module}
                   index={module.id}
                   refreshPage={refreshPage}
-                  courseId={Number(id)}
+                  courseId={id}
                 />
               </div>
             ))}
@@ -117,7 +143,7 @@ const ViewCourse: React.FC = () => {
                     index={activeModule.id}
                     module={activeModule}
                     refreshPage={refreshPage}
-                    courseId={Number(id)}
+                    courseId={id}
                   />
                 )}
               </DragOverlay>
@@ -161,7 +187,7 @@ const ViewCourse: React.FC = () => {
       const updatedModuleIds: number[] = updatedModules.map(
         (module) => module.id,
       );
-      updateModuleSequence(updatedModuleIds);
+      handleUpdateModuleSequence(updatedModuleIds);
       return updatedModules;
     });
   }

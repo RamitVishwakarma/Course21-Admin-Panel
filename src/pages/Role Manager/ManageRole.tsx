@@ -2,39 +2,32 @@ import DefaultLayout from '@/layout/DefaultLayout';
 import Loader from '../../common/Loader';
 import { useEffect, useState } from 'react';
 import Role from '../../interfaces/Roles';
-import axios from 'axios';
 import Permission from '../../interfaces/Permission';
 import EditRole from './EditRole';
+import { useUserStore } from '@/store/useUserStore';
 
 const ManageRole = () => {
-  const [loading, setLoading] = useState(false);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
-  //geting roles
+
+  // Get roles and permissions from the user store
+  const { roles, permissions, fetchRoles, fetchPermissions } = useUserStore(
+    (state) => ({
+      roles: state.roles,
+      permissions: state.permissions,
+      fetchRoles: state.fetchRoles,
+      fetchPermissions: state.fetchPermissions,
+    }),
+  );
+
+  // Fetch roles and permissions on component mount
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}roles`)
-      .then((res) => {
-        setRoles(res.data);
-        setTimeout(() => setLoading(false), 1000);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  //geting permissions
-  useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}permissions`)
-      .then((res) => {
-        setPermissions(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [refresh]);
+    fetchRoles();
+    fetchPermissions();
+    // Simulate loading delay for UI consistency
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, [fetchRoles, fetchPermissions, refresh]);
 
   const refreshPage = () => {
     setRefresh(!refresh);
