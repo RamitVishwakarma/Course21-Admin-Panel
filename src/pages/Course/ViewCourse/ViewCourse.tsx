@@ -10,65 +10,79 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
-import { Modules } from '@/interfaces/Modules';
-import { Course } from '../../../interfaces/Course';
+import { type Module, type Course } from '../../../types';
 import { createPortal } from 'react-dom';
 import CourseCard from './CourseCard';
 import ModuleCard from './ModuleCard';
 import DefaultLayout from '../../../layout/DefaultLayout';
 import CreateModule from '../../Modules/CreateModule';
-import Loader from '../../../common/Loader';
+import Loader from '../../../components/ui/loader';
 import { useToast } from '@/components/ui/use-toast';
 import { useCourseStore } from '@/store/useCourseStore';
 
 const ViewCourse: React.FC = () => {
-  const id = Number(useParams().id);
-  const [course, setCourse] = useState<Course>();
-  const [modules, setModules] = useState<Modules[]>([]);
+  const { id } = useParams();
+  const [course, setCourse] = useState<Course | null>(null);
+  const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refresh, setRefresh] = useState(false);
   const { toast } = useToast();
 
-  // Get data and functions from our Zustand store
-  const { courses, fetchCourses, updateModuleSequence } = useCourseStore(
-    (state) => ({
-      courses: state.courses,
-      fetchCourses: state.fetchCourses,
-      updateModuleSequence: state.updateModuleSequence,
-    }),
-  );
+  const {
+    courses,
+    fetchCourses,
+    fetchCourseById,
+    fetchModulesByCourseId,
+    updateModuleSequence,
+  } = useCourseStore();
 
-  // Getting an array of module ids
-  const moduleId = useMemo(() => modules.map((module) => module.id), [modules]);
+  // Getting an array of module ids for drag and drop
+  const moduleIds = useMemo(
+    () => modules.map((module) => module.id),
+    [modules],
+  );
   // getting the active module while dragging also for overlay
-  const [activeModule, setActiveModule] = useState<Modules | null>(null);
+  const [activeModule, setActiveModule] = useState<Module | null>(null);
 
   useEffect(() => {
-    // Load courses if not already loaded
-    if (courses.length === 0) {
-      fetchCourses();
+    const loadCourseData = async () => {
       setLoading(true);
-    } else {
-      // Find the course with the matching ID
-      const foundCourse = courses.find((c) => c.id === id);
-      if (foundCourse) {
-        setCourse(foundCourse);
 
-        // Sort modules by index
-        const sortedModules = [...foundCourse.modules].sort((a, b) => {
-          // Handle null indexes by placing them at the end
-          if (a.index === null) return 1;
-          if (b.index === null) return -1;
-          return a.index - b.index;
-        });
-
-        setModules(sortedModules);
-        setLoading(false);
-      } else {
-        setLoading(false);
+      // Load courses if not already loaded
+      if (courses.length === 0) {
+        await fetchCourses();
       }
-    }
-  }, [id, courses, fetchCourses, refresh]);
+
+      if (id) {
+        // Find the course
+        const foundCourse = fetchCourseById(id);
+        if (foundCourse) {
+          setCourse(foundCourse);
+
+          // Get modules for this course
+          const courseModules = fetchModulesByCourseId(id);
+          setModules(courseModules);
+        } else {
+          toast({
+            title: 'Course not found',
+            variant: 'destructive',
+          });
+        }
+      }
+
+      setLoading(false);
+    };
+
+    loadCourseData();
+  }, [
+    id,
+    courses,
+    refresh,
+    fetchCourses,
+    fetchCourseById,
+    fetchModulesByCourseId,
+    toast,
+  ]);
 
   const refreshPage = () => {
     setRefresh(!refresh);
@@ -82,25 +96,35 @@ const ViewCourse: React.FC = () => {
     }),
   );
 
-  const handleUpdateModuleSequence = (updatedModuleIds: number[]) => {
-    try {
-      // Create array of objects with id and index for the store update
-      const moduleSequence = updatedModuleIds.map((id, index) => ({
-        id,
-        index: index + 1, // 1-based index
-      }));
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const activeModuleData = modules.find((module) => module.id === active.id);
+    setActiveModule(activeModuleData || null);
+  };
 
-      // Update sequence in Zustand store
-      updateModuleSequence(moduleSequence);
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveModule(null);
 
-      toast({
-        title: 'Module sequence updated successfully',
-      });
-    } catch (err) {
-      toast({
-        title: 'Failed to update module sequence',
-        variant: 'destructive',
-      });
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = modules.findIndex((module) => module.id === active.id);
+    const newIndex = modules.findIndex((module) => module.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newModuleOrder = arrayMove(modules, oldIndex, newIndex);
+      const newModuleIds = newModuleOrder.map((module) => module.id);
+
+      setModules(newModuleOrder);
+
+      // Update the course store with new module sequence
+      if (course?.id) {
+        updateModuleSequence(course.id, newModuleIds);
+
+        toast({
+          title: 'Module sequence updated successfully',
+        });
+      }
     }
   };
 
@@ -115,22 +139,22 @@ const ViewCourse: React.FC = () => {
         <div className="border-y font-semibold border-stroke py-4.5 px-4  text-black dark:text-white dark:border-stroke/20 md:px-6 2xl:px-7.5">
           <div className="flex text-xl items-center justify-between">
             <p className="font-medium text-3xl">Modules</p>
-            <CreateModule courseId={id} refreshPage={refreshPage} />
+            {id && <CreateModule courseId={id} refreshPage={refreshPage} />}
           </div>
         </div>
         <DndContext
           sensors={sensors}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
         >
-          <SortableContext items={moduleId}>
+          <SortableContext items={moduleIds}>
             {modules.map((module, index) => (
-              <div key={index} className="m-4">
+              <div key={module.id} className="m-4">
                 <ModuleCard
                   module={module}
-                  index={module.id}
+                  index={index}
                   refreshPage={refreshPage}
-                  courseId={id}
+                  courseId={id || ''}
                 />
               </div>
             ))}
@@ -140,10 +164,10 @@ const ViewCourse: React.FC = () => {
               <DragOverlay>
                 {activeModule && (
                   <ModuleCard
-                    index={activeModule.id}
+                    index={0}
                     module={activeModule}
                     refreshPage={refreshPage}
-                    courseId={id}
+                    courseId={id || ''}
                   />
                 )}
               </DragOverlay>
@@ -154,43 +178,6 @@ const ViewCourse: React.FC = () => {
       </div>
     </DefaultLayout>
   );
-
-  function onDragStart(event: DragStartEvent) {
-    // console.log(event.active.data.current?.module);
-    if (event.active.data.current?.type === 'module') {
-      setActiveModule(event.active.data.current.module);
-      return;
-    }
-  }
-
-  function onDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    // if there is no over then return
-    if (!over) return;
-    // getting the id of the module that was dragged and the one that it was dragged over
-    const activeId = active.id;
-    const overId = over.id;
-    // if the ids are same then return
-    if (activeId === overId) return;
-    setModules((module) => {
-      const activeModuleIndex = module.findIndex(
-        (module) => module.id === activeId,
-      );
-      const overModuleIndex = module.findIndex(
-        (module) => module.id === overId,
-      );
-      const updatedModules = arrayMove(
-        module,
-        activeModuleIndex,
-        overModuleIndex,
-      );
-      const updatedModuleIds: number[] = updatedModules.map(
-        (module) => module.id,
-      );
-      handleUpdateModuleSequence(updatedModuleIds);
-      return updatedModules;
-    });
-  }
 };
 
 export default ViewCourse;

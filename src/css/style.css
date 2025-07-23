@@ -212,6 +212,12 @@ span.flatpickr-weekday,
   background-image: url(./images/icon/icon-arrow-down.svg);
 }
 
+.option-padding {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 1rem;
+}
+
 [x-cloak] {
   display: none !important;
 }

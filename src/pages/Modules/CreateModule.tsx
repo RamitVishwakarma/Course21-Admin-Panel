@@ -1,6 +1,4 @@
-import React from 'react';
-import { IdentificationIcon } from '@heroicons/react/20/solid';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,61 +14,94 @@ export default function CreateModule({
   courseId,
   refreshPage,
 }: {
-  courseId: number;
+  courseId: string;
   refreshPage: () => void;
 }) {
   interface FormData {
-    name: string;
-    featured_image: File | string;
-    course_id: number;
+    title: string;
+    description: string;
+    objectives: string[];
+    isPublished: boolean;
+    isPreview: boolean;
   }
 
   const [data, setData] = useState<FormData>({
-    name: '',
-    featured_image: new File([], ''),
-    course_id: courseId,
+    title: '',
+    description: '',
+    objectives: [''],
+    isPublished: false,
+    isPreview: false,
   });
 
-  const { toast } = useToast();
-  //dialog state
   const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const { addModule } = useCourseStore();
 
-  // Get the addModule function from our Zustand store
-  const addModule = useCourseStore((state) => state.addModule);
-
-  const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.type === 'file') {
-      setData({ ...data, [e.target.name]: e.target.files![0] });
-      return;
+  const handleFormData = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setData({ ...data, [name]: checked });
+    } else {
+      setData({ ...data, [name]: value });
     }
-    setData({ ...data, [e.target.name]: e.target.value });
+  };
+
+  const handleObjectiveChange = (index: number, value: string) => {
+    const newObjectives = [...data.objectives];
+    newObjectives[index] = value;
+    setData({ ...data, objectives: newObjectives });
+  };
+
+  const addObjective = () => {
+    setData({ ...data, objectives: [...data.objectives, ''] });
+  };
+
+  const removeObjective = (index: number) => {
+    if (data.objectives.length > 1) {
+      const newObjectives = data.objectives.filter((_, i) => i !== index);
+      setData({ ...data, objectives: newObjectives });
+    }
   };
 
   const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     try {
-      // Instead of making an API call, use our store
       addModule(courseId, {
-        name: data.name,
-        course_id: courseId,
-        image_path:
-          data.featured_image instanceof File
-            ? `modules/${Math.random().toString(36).substring(2)}.png`
-            : null,
-        index: null,
+        title: data.title,
+        description: data.description,
+        courseId: courseId,
+        order: 1, // Will be recalculated in the store
+        duration: 0,
+        lectureCount: 0,
+        lectures: [],
+        objectives: data.objectives.filter((obj) => obj.trim() !== ''),
+        isPublished: data.isPublished,
+        isPreview: data.isPreview,
+        completionRate: 0,
+        enrollmentCount: 0,
       });
 
       toast({
-        title: 'Module Added Successfully',
+        title: 'Module created successfully',
+      });
+
+      // Reset form
+      setData({
+        title: '',
+        description: '',
+        objectives: [''],
+        isPublished: false,
+        isPreview: false,
       });
 
       setOpen(false);
       refreshPage();
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
       toast({
-        title: 'Module Addition Failed',
+        title: 'Failed to create module',
         variant: 'destructive',
       });
     }
@@ -79,55 +110,121 @@ export default function CreateModule({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className=" inline-flex items-center justify-center gap-2.5 rounded-full bg-meta-3 py-4 px-6 text-center font-medium text-white hover:bg-opacity-80 lg:px-4 xl:px-6">
+        <button className="inline-flex items-center justify-center gap-2.5 rounded-full bg-primary py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6">
           <PlusCircleIcon className="h-5 w-5" />
-          <span>Create New</span>
+          Add Module
         </button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogTitle>Create Module</DialogTitle>
-        <form onSubmit={formSubmitHandler}>
-          {/* Module Name */}
-          <div className="mb-4">
-            <label className="mb-2.5 block font-medium text-black dark:text-white">
-              Module Name
-            </label>
-            <div className="relative">
+      <DialogContent className="max-w-2xl">
+        <DialogTitle>Create New Module</DialogTitle>
+        <form onSubmit={formSubmitHandler} className="space-y-4">
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2.5 block text-black dark:text-white">
+                Module Title
+              </label>
               <input
                 type="text"
-                name="name"
-                value={data.name}
+                name="title"
+                value={data.title}
                 onChange={handleFormData}
-                placeholder="Enter Module Name"
+                placeholder="Enter module title"
                 className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                required
               />
-              <span className="absolute right-4 top-4">
-                <IdentificationIcon className="w-6 h-6 text-bodydark" />
-              </span>
             </div>
-          </div>
 
-          {/* Photo upload */}
-          <div className="mb-4">
-            <label className="mb-2.5 block font-medium text-black dark:text-white">
-              Module Image
-            </label>
-            <input
-              type="file"
-              name="featured_image"
-              onChange={handleFormData}
-              className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
-            />
+            <div>
+              <label className="mb-2.5 block text-black dark:text-white">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={data.description}
+                onChange={handleFormData}
+                placeholder="Enter module description"
+                rows={4}
+                className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="mb-2.5 block text-black dark:text-white">
+                Learning Objectives
+              </label>
+              {data.objectives.map((objective, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={objective}
+                    onChange={(e) =>
+                      handleObjectiveChange(index, e.target.value)
+                    }
+                    placeholder={`Objective ${index + 1}`}
+                    className="flex-1 rounded-lg border border-stroke bg-transparent py-2 pl-4 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                  />
+                  {data.objectives.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeObjective(index)}
+                      className="px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded-md"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addObjective}
+                className="text-primary hover:underline"
+              >
+                + Add Objective
+              </button>
+            </div>
+
+            <div className="flex gap-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="isPublished"
+                  checked={data.isPublished}
+                  onChange={handleFormData}
+                  className="mr-2"
+                />
+                <span className="text-black dark:text-white">Published</span>
+              </label>
+
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="isPreview"
+                  checked={data.isPreview}
+                  onChange={handleFormData}
+                  className="mr-2"
+                />
+                <span className="text-black dark:text-white">
+                  Available as Preview
+                </span>
+              </label>
+            </div>
           </div>
 
           <DialogFooter>
-            <div className="mb-5">
-              <input
-                type="submit"
-                value="Submit"
-                className="w-full font-medium cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
-              />
-            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90"
+            >
+              Create Module
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

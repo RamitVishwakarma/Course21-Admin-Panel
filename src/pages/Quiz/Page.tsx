@@ -1,4 +1,3 @@
-import React from 'react';
 import { Textarea } from '../../components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
 import { Label } from '../../components/ui/label';
@@ -11,17 +10,12 @@ import {
   TabsTrigger,
   TabsContent,
 } from '../../components/ui/tabs';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Controller } from 'react-hook-form';
 import DefaultLayout from '@/layout/DefaultLayout';
 import { useToast } from '@/components/ui/use-toast';
 import { useQuizStore } from '@/store/useQuizStore';
 import { useParams } from 'react-router-dom';
-
-interface Quiz {
-  title: string;
-  questions: Question[];
-}
 
 type Question =
   | MultipleChoiceQuestion
@@ -81,14 +75,10 @@ const QuizCreate = () => {
     },
   });
 
-  // Get addQuiz function from our Zustand store
   const addQuiz = useQuizStore((state) => state.addQuiz);
-  const fetchQuizzes = useQuizStore((state) => state.fetchQuizzes);
 
-  // Ensure quizzes are loaded
-  useEffect(() => {
-    fetchQuizzes();
-  }, [fetchQuizzes]);
+  // No need to fetch quizzes since they're already loaded in the store
+  // useEffect removed to prevent infinite loops
 
   const [questions, setQuestions] = useState([
     { type: 'true_false', content: {} },
@@ -111,8 +101,8 @@ const QuizCreate = () => {
     }));
 
     try {
-      // Map the form data to our quiz store format
-      const quizQuestions = updatedQuestions.map((q) => {
+      // Process quiz creation
+      const quizQuestions = updatedQuestions.map((q, questionIndex) => {
         // Prepare options array for multiple choice questions
         const options = [];
         if (q.type === 'multiple_choice' && q.options) {
@@ -128,6 +118,7 @@ const QuizCreate = () => {
         }
 
         return {
+          id: questionIndex + 1, // Temporary ID
           quiz_id: 0, // Will be set by the store
           question: q.question,
           type: q.type,
@@ -135,7 +126,7 @@ const QuizCreate = () => {
         };
       });
 
-      // Add the quiz to our store
+      // Add quiz using Zustand store
       addQuiz({
         title: data.title,
         description: 'Quiz created with the quiz editor',
@@ -183,75 +174,97 @@ const QuizCreate = () => {
 
   return (
     <DefaultLayout>
-      <form className="size-full" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col gap-10">
-          {/* Quiz Title */}
-          <Input
-            {...register('title')}
-            placeholder="Quiz Title"
-            className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-          />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex flex-col gap-6 md:gap-10">
+            {/* Quiz Title */}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Quiz Title
+              </label>
+              <Input
+                {...register('title')}
+                placeholder="Enter quiz title"
+                className="w-full rounded-lg border border-stroke bg-transparent py-3 px-4 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+              />
+            </div>
 
-          {/* ShadCN Tabs to organize questions */}
-          <Tabs defaultValue="question-0" className="flex flex-col gap-4">
-            <TabsList className="flex flex-wrap items-center min-h-28 overflow-auto p-0 gap-2">
-              {questions.map((_, index) => (
-                <TabsTrigger
-                  className="dark:data-[state=active]:bg-meta-3  data-[state=active]:bg-meta-3  data-[state=active]:text-white dark:ata-[state=active]:text-white data-[state=active]:rounded-lg dark:bg-meta-4 bg-meta-9 dark:text-white text-meta-4 size-8"
+            {/* ShadCN Tabs to organize questions */}
+            <Tabs defaultValue="question-0" className="flex flex-col gap-4">
+              <div className="overflow-x-auto">
+                <TabsList className="flex flex-wrap items-center min-h-12 sm:min-h-16 lg:min-h-20 overflow-x-auto p-2 gap-2 w-full">
+                  {questions.map((_, index) => (
+                    <TabsTrigger
+                      className="flex-shrink-0 dark:data-[state=active]:bg-meta-3 data-[state=active]:bg-meta-3 data-[state=active]:text-white dark:data-[state=active]:text-white data-[state=active]:rounded-lg dark:bg-meta-4 bg-meta-9 dark:text-white text-meta-4 min-w-[2rem] h-8 sm:h-10 text-sm sm:text-base"
+                      key={index}
+                      value={`question-${index}`}
+                    >
+                      {index + 1}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
+
+              {/* Each tab content for the question */}
+              {questions.map((question, index) => (
+                <TabsContent
+                  className="mt-4"
                   key={index}
                   value={`question-${index}`}
                 >
-                  {index + 1}
-                </TabsTrigger>
+                  <div className="border border-stroke dark:border-form-strokedark rounded-lg p-4 sm:p-6">
+                    <h3 className="text-lg sm:text-xl font-semibold mb-4">
+                      Question {index + 1}
+                    </h3>
+
+                    {/* Dropdown to select question type */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Question Type
+                      </label>
+                      <select
+                        value={question.type}
+                        onChange={(e) =>
+                          updateQuestionType(index, e.target.value)
+                        }
+                        className="w-full sm:max-w-xs py-2 px-3 border rounded border-stroke dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary focus:border-primary focus:outline-none"
+                      >
+                        {questionTypes.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Render form based on the question type */}
+                    <div className="w-full">
+                      {renderQuestionForm(question, index)}
+                    </div>
+                  </div>
+                </TabsContent>
               ))}
-            </TabsList>
+            </Tabs>
 
-            {/* Each tab content for the question */}
-            {questions.map((question, index) => (
-              <TabsContent className="" key={index} value={`question-${index}`}>
-                <div className="border-[0.5px] rounded-lg p-4 mt-4">
-                  <h3 className="text-lg font-semibold mb-4">
-                    Question {index + 1}
-                  </h3>
-
-                  {/* Dropdown to select question type */}
-                  <select
-                    value={question.type}
-                    onChange={(e) => updateQuestionType(index, e.target.value)}
-                    className="mb-4 py-2 px-4 border rounded border-stroke dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                  >
-                    {questionTypes.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-
-                  {/* Render form based on the question type */}
-                  {renderQuestionForm(question, index)}
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-
-          {/* Submit Quiz */}
-          <div className="w-full flex gap-4 sticky bottom-0 flex-row-reverse">
-            <button
-              type="submit"
-              className="bg-meta-5 flex-1 text-white px-4 py-2 rounded-xl"
-            >
-              Submit Quiz
-            </button>
-            <button
-              type="button"
-              onClick={addQuestion}
-              className="bg-meta-3 flex-1 text-white px-4 py-2 rounded-xl"
-            >
-              Add Question
-            </button>
+            {/* Submit Quiz */}
+            <div className="w-full flex flex-col sm:flex-row gap-4 sticky bottom-0 bg-white dark:bg-boxdark p-4 rounded-lg shadow-lg">
+              <button
+                type="button"
+                onClick={addQuestion}
+                className="order-2 sm:order-1 bg-meta-3 flex-1 text-white px-4 py-3 rounded-xl font-medium hover:bg-opacity-90 transition-colors"
+              >
+                Add Question
+              </button>
+              <button
+                type="submit"
+                className="order-1 sm:order-2 bg-meta-5 flex-1 text-white px-4 py-3 rounded-xl font-medium hover:bg-opacity-90 transition-colors"
+              >
+                Submit Quiz
+              </button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </DefaultLayout>
   );
 };
@@ -265,34 +278,54 @@ const TrueFalseQuestion = ({
   control,
   questionIndex,
 }: TrueFalseQuestionProps) => (
-  <div>
-    <Textarea
-      {...control.register(`questions[${questionIndex}].content.question`)}
-      placeholder="Enter the question here"
-      className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
-    />
-    <div>Set correct answer</div>
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Question
+      </label>
+      <Textarea
+        {...control.register(`questions[${questionIndex}].content.question`)}
+        placeholder="Enter the question here"
+        className="w-full rounded-lg border border-stroke bg-transparent py-3 px-4 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary resize-none min-h-[100px]"
+      />
+    </div>
 
-    <Controller
-      control={control}
-      name={`questions[${questionIndex}].content.correctAnswer`}
-      defaultValue="true"
-      render={({ field }) => (
-        <RadioGroup
-          value={field.value}
-          onValueChange={(value) => field.onChange(value)} // Manually bind the value
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="true" id={`r1_${questionIndex}`} />
-            <Label htmlFor={`r1_${questionIndex}`}>True</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="false" id={`r2_${questionIndex}`} />
-            <Label htmlFor={`r2_${questionIndex}`}>False</Label>
-          </div>
-        </RadioGroup>
-      )}
-    />
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        Set correct answer
+      </label>
+      <Controller
+        control={control}
+        name={`questions[${questionIndex}].content.correctAnswer`}
+        defaultValue="true"
+        render={({ field }) => (
+          <RadioGroup
+            value={field.value}
+            onValueChange={(value) => field.onChange(value)}
+            className="space-y-3"
+          >
+            <div className="flex items-center space-x-3">
+              <RadioGroupItem value="true" id={`r1_${questionIndex}`} />
+              <Label
+                htmlFor={`r1_${questionIndex}`}
+                className="text-base cursor-pointer"
+              >
+                True
+              </Label>
+            </div>
+            <div className="flex items-center space-x-3">
+              <RadioGroupItem value="false" id={`r2_${questionIndex}`} />
+              <Label
+                htmlFor={`r2_${questionIndex}`}
+                className="text-base cursor-pointer"
+              >
+                False
+              </Label>
+            </div>
+          </RadioGroup>
+        )}
+      />
+    </div>
   </div>
 );
 
@@ -305,44 +338,63 @@ const MultipleChoiceQuestion = ({
   control,
   questionIndex,
 }: MultipleChoiceQuestionProps) => (
-  <div>
-    <Textarea
-      {...control.register(`questions[${questionIndex}].content.question`)}
-      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-      placeholder="Enter the question here"
-    />
-    <div>Set correct answer</div>
-    <Controller
-      control={control}
-      name={`questions[${questionIndex}].content.correctAnswer`}
-      defaultValue="1"
-      render={({ field }) => (
-        <RadioGroup
-          value={field.value}
-          onValueChange={(value) => field.onChange(value)} // Manually bind the value
-        >
-          {[0, 1, 2, 3].map((optionIndex) => (
-            <div key={optionIndex} className="flex items-center space-x-2">
-              <Input
-                {...control.register(
-                  `questions[${questionIndex}].content.options[${optionIndex}]`,
-                )}
-                className="w-[80%] rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                type="text"
-                placeholder={`Option ${optionIndex + 1}`}
-              />
-              <RadioGroupItem
-                value={`${optionIndex + 1}`}
-                id={`mcq_${optionIndex}_${questionIndex}`}
-              />
-              <Label htmlFor={`mcq_${optionIndex}_${questionIndex}`}>
-                Option {optionIndex + 1}
-              </Label>
-            </div>
-          ))}
-        </RadioGroup>
-      )}
-    />
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Question
+      </label>
+      <Textarea
+        {...control.register(`questions[${questionIndex}].content.question`)}
+        className="w-full rounded-lg border border-stroke bg-transparent py-3 px-4 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary resize-none min-h-[100px]"
+        placeholder="Enter the question here"
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        Options & Correct Answer
+      </label>
+      <Controller
+        control={control}
+        name={`questions[${questionIndex}].content.correctAnswer`}
+        defaultValue="1"
+        render={({ field }) => (
+          <RadioGroup
+            value={field.value}
+            onValueChange={(value) => field.onChange(value)}
+            className="space-y-3"
+          >
+            {[0, 1, 2, 3].map((optionIndex) => (
+              <div
+                key={optionIndex}
+                className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+              >
+                <div className="flex items-center space-x-2 order-2 sm:order-1">
+                  <RadioGroupItem
+                    value={`${optionIndex + 1}`}
+                    id={`mcq_${optionIndex}_${questionIndex}`}
+                  />
+                  <Label
+                    htmlFor={`mcq_${optionIndex}_${questionIndex}`}
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    Correct
+                  </Label>
+                </div>
+                <Input
+                  {...control.register(
+                    `questions[${questionIndex}].content.options[${optionIndex}]`,
+                  )}
+                  className="order-1 sm:order-2 flex-1 rounded-lg border border-stroke bg-transparent py-2 px-3 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                  type="text"
+                  placeholder={`Option ${optionIndex + 1}`}
+                />
+              </div>
+            ))}
+          </RadioGroup>
+        )}
+      />
+    </div>
   </div>
 );
 
@@ -355,19 +407,31 @@ const ShortAnswerQuestion = ({
   control,
   questionIndex,
 }: ShortAnswerQuestionProps) => (
-  <div>
-    <Textarea
-      {...control.register(`questions[${questionIndex}].content.question`)}
-      placeholder="Enter the question here"
-      className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
-    />
-    <div>Set correct answer</div>
-    <Input
-      {...control.register(`questions[${questionIndex}].content.correctAnswer`)}
-      type="text"
-      placeholder="Correct answer"
-      className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
-    />
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Question
+      </label>
+      <Textarea
+        {...control.register(`questions[${questionIndex}].content.question`)}
+        placeholder="Enter the question here"
+        className="w-full rounded-lg border border-stroke bg-transparent py-3 px-4 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary resize-none min-h-[100px]"
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Correct Answer
+      </label>
+      <Input
+        {...control.register(
+          `questions[${questionIndex}].content.correctAnswer`,
+        )}
+        type="text"
+        placeholder="Enter the correct answer"
+        className="w-full rounded-lg border border-stroke bg-transparent py-3 px-4 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+      />
+    </div>
   </div>
 );
 
@@ -380,33 +444,58 @@ const MultipleAnswerQuestion = ({
   control,
   questionIndex,
 }: MultipleAnswerQuestionProps) => (
-  <div>
-    <Textarea
-      {...control.register(`questions[${questionIndex}].content.question`)}
-      placeholder="Enter the question here"
-      className='w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"'
-    />
-    <div>Set correct answer</div>
-    <div className="flex flex-col gap-2">
-      {[0, 1, 2, 3].map((optionIndex) => (
-        <div key={optionIndex} className="flex items-center space-x-2">
-          <Input
-            {...control.register(
-              `questions[${questionIndex}].content.options[${optionIndex}]`,
-            )}
-            className="w-[90%] rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-            type="text"
-            placeholder={`Option ${optionIndex + 1}`}
-          />
-          <Controller
-            control={control}
-            name={`questions[${questionIndex}].content.correctAnswer`}
-            render={({ field }) => (
-              <Checkbox {...field} value={`option_${optionIndex}`} />
-            )}
-          />
-        </div>
-      ))}
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        Question
+      </label>
+      <Textarea
+        {...control.register(`questions[${questionIndex}].content.question`)}
+        placeholder="Enter the question here"
+        className="w-full rounded-lg border border-stroke bg-transparent py-3 px-4 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary resize-none min-h-[100px]"
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        Options (Select multiple correct answers)
+      </label>
+      <div className="space-y-3">
+        {[0, 1, 2, 3].map((optionIndex) => (
+          <div
+            key={optionIndex}
+            className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+          >
+            <Input
+              {...control.register(
+                `questions[${questionIndex}].content.options[${optionIndex}]`,
+              )}
+              className="order-1 flex-1 rounded-lg border border-stroke bg-transparent py-2 px-3 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+              type="text"
+              placeholder={`Option ${optionIndex + 1}`}
+            />
+            <div className="flex items-center space-x-2 order-2">
+              <Controller
+                control={control}
+                name={`questions[${questionIndex}].content.correctAnswer`}
+                render={({ field }) => (
+                  <Checkbox
+                    {...field}
+                    value={`option_${optionIndex}`}
+                    id={`option_${optionIndex}_${questionIndex}`}
+                  />
+                )}
+              />
+              <Label
+                htmlFor={`option_${optionIndex}_${questionIndex}`}
+                className="text-sm font-medium cursor-pointer"
+              >
+                Correct
+              </Label>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { IdentificationIcon, PlusCircleIcon } from '@heroicons/react/20/solid';
 import {
   Dialog,
@@ -9,41 +9,52 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { useLectureStore } from '@/store/useLectureStore';
+import { useModuleStore } from '@/store/useModuleStore';
 
 export default function CreateLecture({
   moduleId,
   refreshPage,
 }: {
-  moduleId: number;
+  moduleId: string;
   refreshPage: () => void;
 }) {
   interface FormData {
     title: string;
     description: string;
-    featured_image: File | string;
-    module_id: number;
-    video_file?: File | string;
+    moduleId: string;
+    videoDuration: number;
+    type: 'video' | 'text' | 'quiz' | 'assignment';
+    videoUrl: string;
+    content?: string;
+    isFree: boolean;
   }
 
   const [data, setData] = useState<FormData>({
     title: '',
     description: '',
-    featured_image: new File([], ''),
-    module_id: moduleId,
-    video_file: new File([], ''),
+    moduleId: moduleId,
+    videoDuration: 0,
+    type: 'video',
+    videoUrl: '',
+    content: '',
+    isFree: false,
   });
 
   const { toast } = useToast();
 
-  // Get addLecture function from lecture store
+  // Get stores
   const addLecture = useLectureStore((state) => state.addLecture);
-  const lectures = useLectureStore((state) => state.lectures);
-  const fetchLectures = useLectureStore((state) => state.fetchLectures);
+  const addLectureToModule = useModuleStore(
+    (state) => state.addLectureToModule,
+  );
+  const modules = useModuleStore((state) => state.modules);
 
-  // Ensure lectures are loaded
-  useEffect(() => {
-    fetchLectures();
-  }, [fetchLectures]);
+  // Get the module to find courseId
+  const module = modules.find((m) => m.id === moduleId);
+  const courseId = module?.courseId || '';
+
+  // No need to fetch lectures since they're already loaded in the store
+  // useEffect removed to prevent infinite loops
 
   // dialog state
   const [open, setOpen] = useState(false);
@@ -52,15 +63,20 @@ export default function CreateLecture({
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const handleFormData = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
-    if (e.target instanceof HTMLInputElement && e.target.type === 'file') {
-      const name = e.target.name;
-      const file = e.target.files![0];
-      setData({ ...data, [name]: file });
-      return;
+    const { name, value, type } = e.target;
+
+    if (type === 'checkbox') {
+      const target = e.target as HTMLInputElement;
+      setData((prev) => ({ ...prev, [name]: target.checked }));
+    } else if (type === 'number') {
+      setData((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
+    } else {
+      setData((prev) => ({ ...prev, [name]: value }));
     }
-    setData({ ...data, [e.target.name]: e.target.value });
   };
 
   const simulateUpload = () => {
@@ -92,31 +108,34 @@ export default function CreateLecture({
       .toString(36)
       .substring(2)}.mp4`;
 
-    // Create a mock image URL
-    const mockImageUrl = `https://example.com/images/${Math.random()
-      .toString(36)
-      .substring(2)}.jpg`;
-
-    // Generate the next sequence number for this module
-    const moduleLectures = lectures.filter(
-      (lecture) => lecture.module_id === moduleId,
-    );
-    const nextSequence =
-      moduleLectures.length > 0
-        ? Math.max(...moduleLectures.map((l) => l.sequence)) + 1
-        : 1;
-
     // Add the lecture to our store after "upload" is complete
     setTimeout(() => {
       try {
-        addLecture({
+        const newLecture = {
           title: data.title,
           description: data.description || 'No description provided',
-          module_id: moduleId,
-          sequence: nextSequence,
-          url: mockVideoUrl,
-          resource_url: mockImageUrl,
-        });
+          moduleId: moduleId,
+          courseId: courseId,
+          order: 0, // Will be set by the store
+          videoUrl: data.videoUrl || mockVideoUrl,
+          videoDuration: data.videoDuration,
+          videoThumbnail: '',
+          videoQuality: ['720p'] as ('480p' | '720p' | '1080p')[],
+          type: data.type,
+          content: data.content,
+          downloadableResources: [],
+          isFree: data.isFree,
+          isPublished: true,
+          viewCount: 0,
+          completionRate: 0,
+          averageWatchTime: 0,
+          dropOffPoints: [],
+        };
+
+        const newLectureId = addLecture(newLecture);
+
+        // Also add the lecture ID to the module
+        addLectureToModule(moduleId, newLectureId);
 
         toast({
           title: 'Lecture Added Successfully',
@@ -127,9 +146,12 @@ export default function CreateLecture({
         setData({
           title: '',
           description: '',
-          featured_image: new File([], ''),
-          module_id: moduleId,
-          video_file: new File([], ''),
+          moduleId: moduleId,
+          videoDuration: 0,
+          type: 'video',
+          videoUrl: '',
+          content: '',
+          isFree: false,
         });
       } catch (error) {
         console.error(error);

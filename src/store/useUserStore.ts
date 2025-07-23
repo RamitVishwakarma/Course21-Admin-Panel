@@ -1,145 +1,248 @@
 import { create } from 'zustand';
-import userData from '../data/userData';
-import rolesData from '../data/roles';
+import { persist } from 'zustand/middleware';
+import { sampleUsers } from '../data/sample/users';
+import { sampleRoles, samplePermissions } from '../data/sample/roles';
+import { type User } from '../types';
+import { Role } from '../types/Roles';
+import permissionsData, { type Permission } from '../data/permissions';
 
-export interface User {
-  id: number;
-  email: string;
-  name: string | null;
-  password: string;
-  username: string;
-  status: number;
-  verified: number;
-  roles_mask: number;
-  registered: number;
-  role_id: number;
-  last_login: number;
-  created_at: string | null;
-  updated_at: string | null;
-  deleted_at: string | null;
-}
-
-export interface Role {
-  id: number;
-  name: string;
-  code: string;
-}
+// Re-export types for convenience
+export type { User, Role, Permission };
 
 interface UserStore {
+  // Current user (authentication)
+  user: User | null;
+
+  // User management
   users: User[];
   roles: Role[];
+  permissions: Permission[];
   isLoading: boolean;
   error: string | null;
 
+  // Authentication operations
+  setUser: (user: User) => void;
+  clearUser: () => void;
+
   // Fetch operations
-  fetchUsers: () => void;
-  fetchUserById: (id: number) => User | undefined;
-  fetchRoles: () => void;
+  fetchUsers: () => Promise<void>;
+  fetchUserById: (id: string) => User | undefined;
+  fetchRoles: () => Promise<void>;
+  fetchPermissions: () => Promise<void>;
 
   // User CRUD operations
-  addUser: (userData: Omit<User, 'id' | 'registered' | 'last_login'>) => void;
-  updateUser: (id: number, userData: Partial<User>) => void;
-  deleteUser: (id: number) => void;
+  addUser: (userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateUser: (id: string, userData: Partial<User>) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
+  enrollUserInCourse: (userId: string, courseId: string) => Promise<void>;
 
   // Role operations
   addRole: (roleData: Omit<Role, 'id'>) => void;
-  updateRole: (id: number, roleData: Partial<Role>) => void;
-  deleteRole: (id: number) => void;
+  updateRole: (id: string, roleData: Partial<Role>) => void;
+  deleteRole: (id: string) => void;
 }
 
-export const useUserStore = create<UserStore>((set, get) => ({
-  users: [],
-  roles: [],
-  isLoading: false,
-  error: null,
+export const useUserStore = create<UserStore>()(
+  persist(
+    (set, get) => ({
+      // Authentication state
+      user: null,
 
-  fetchUsers: () => {
-    set({ isLoading: true, error: null });
-    try {
-      // Instead of API call, use the local dummy data
-      set({ users: userData, isLoading: false });
-    } catch (error) {
-      set({ error: 'Failed to fetch users', isLoading: false });
-    }
-  },
+      // User management state
+      users: [],
+      roles: [],
+      permissions: [],
+      isLoading: false,
+      error: null,
 
-  fetchUserById: (id) => {
-    return get().users.find((user) => user.id === id);
-  },
+      // Authentication operations
+      setUser: (user) => set({ user }),
+      clearUser: () => set({ user: null }),
 
-  fetchRoles: () => {
-    set({ isLoading: true, error: null });
-    try {
-      set({ roles: rolesData, isLoading: false });
-    } catch (error) {
-      set({ error: 'Failed to fetch roles', isLoading: false });
-    }
-  },
+      fetchUsers: async () => {
+        const currentUsers = get().users;
+        if (currentUsers.length === 0) {
+          // First load: populate from JSON file with enrolled courses initialization
+          const usersWithEnrollment = sampleUsers.map((user) => ({
+            ...user,
+            enrolledCourses: user.enrolledCourses || [],
+          }));
+          set({ users: usersWithEnrollment, isLoading: false });
+        }
+        // Subsequent calls do nothing - data already in localStorage
+      },
 
-  addUser: (userData) => {
-    const newId = Math.max(0, ...get().users.map((user) => user.id)) + 1;
-    const now = Math.floor(Date.now() / 1000); // Unix timestamp
-    const isoDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      fetchUserById: (id) => {
+        const users = get().users;
+        return users.find((user) => user.id === id);
+      },
 
-    const newUser: User = {
-      id: newId,
-      ...userData,
-      registered: now,
-      last_login: now,
-      created_at: isoDate,
-      updated_at: null,
-      deleted_at: null,
-    };
+      fetchRoles: async () => {
+        const currentRoles = get().roles;
+        if (currentRoles.length === 0) {
+          // First load: populate from sampleRoles
+          set({ roles: sampleRoles, isLoading: false });
+        }
+        // Subsequent calls do nothing - data already in localStorage
+      },
 
-    set((state) => ({
-      users: [...state.users, newUser],
-    }));
-  },
+      fetchPermissions: async () => {
+        const currentPermissions = get().permissions;
+        if (currentPermissions.length === 0) {
+          // First load: populate from JSON file
+          set({ permissions: permissionsData, isLoading: false });
+        }
+        // Subsequent calls do nothing - data already in localStorage
+      },
 
-  updateUser: (id, userData) => {
-    const isoDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      addUser: (userData) => {
+        const users = get().users;
+        // Generate new string ID
+        const existingIds = users.map(
+          (user) => parseInt(user.id.replace('user-', '')) || 0,
+        );
+        const newIdNumber = Math.max(0, ...existingIds) + 1;
+        const newId = `user-${newIdNumber}`;
+        const isoDate = new Date().toISOString();
 
-    set((state) => ({
-      users: state.users.map((user) =>
-        user.id === id ? { ...user, ...userData, updated_at: isoDate } : user,
-      ),
-    }));
-  },
+        const newUser: User = {
+          id: newId,
+          ...userData,
+          createdAt: isoDate,
+          updatedAt: isoDate,
+        };
 
-  deleteUser: (id) => {
-    const isoDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        set((state) => ({
+          users: [...state.users, newUser],
+        }));
+      },
 
-    set((state) => ({
-      users: state.users.map((user) =>
-        user.id === id ? { ...user, deleted_at: isoDate } : user,
-      ),
-    }));
-  },
+      updateUser: async (id, userData) => {
+        set({ isLoading: true, error: null });
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 100));
 
-  addRole: (roleData) => {
-    const newId = Math.max(0, ...get().roles.map((role) => role.id)) + 1;
+          const isoDate = new Date().toISOString();
+          set((state) => ({
+            users: state.users.map((user) =>
+              user.id === id
+                ? { ...user, ...userData, updatedAt: isoDate }
+                : user,
+            ),
+            isLoading: false,
+          }));
+        } catch (error) {
+          console.error('Failed to update user:', error);
+          set({ error: 'Failed to update user', isLoading: false });
+          throw error;
+        }
+      },
 
-    const newRole: Role = {
-      id: newId,
-      ...roleData,
-    };
+      deleteUser: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 100));
 
-    set((state) => ({
-      roles: [...state.roles, newRole],
-    }));
-  },
+          // For soft delete, we can just set isActive to false
+          set((state) => ({
+            users: state.users.map((user) =>
+              user.id === id
+                ? {
+                    ...user,
+                    isActive: false,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : user,
+            ),
+            isLoading: false,
+          }));
+        } catch (error) {
+          console.error('Failed to delete user:', error);
+          set({ error: 'Failed to delete user', isLoading: false });
+          throw error;
+        }
+      },
 
-  updateRole: (id, roleData) => {
-    set((state) => ({
-      roles: state.roles.map((role) =>
-        role.id === id ? { ...role, ...roleData } : role,
-      ),
-    }));
-  },
+      enrollUserInCourse: async (userId, courseId) => {
+        try {
+          set({ isLoading: true });
 
-  deleteRole: (id) => {
-    set((state) => ({
-      roles: state.roles.filter((role) => role.id !== id),
-    }));
-  },
-}));
+          set((state) => ({
+            users: state.users.map((user) => {
+              if (user.id === userId) {
+                const currentEnrollments = user.enrolledCourses || [];
+
+                // Check if user is already enrolled
+                if (currentEnrollments.includes(courseId)) {
+                  console.log(
+                    `User ${userId} is already enrolled in course ${courseId}`,
+                  );
+                  return user; // No changes if already enrolled
+                }
+
+                return {
+                  ...user,
+                  coursesEnrolled: (user.coursesEnrolled || 0) + 1,
+                  enrolledCourses: [...currentEnrollments, courseId],
+                  updatedAt: new Date().toISOString(),
+                };
+              }
+              return user;
+            }),
+            isLoading: false,
+          }));
+        } catch (error) {
+          console.error('Failed to enroll user in course:', error);
+          set({ error: 'Failed to enroll user in course', isLoading: false });
+          throw error;
+        }
+      },
+
+      addRole: (roleData) => {
+        const roles = get().roles;
+        // Generate new string id
+        const existingIds = roles.map(
+          (role) => parseInt((role.id || '').replace('role-', '')) || 0,
+        );
+        const newIdNumber = Math.max(0, ...existingIds) + 1;
+        const newId = `role-${newIdNumber}`;
+        const now = new Date().toISOString();
+        const newRole: Role = {
+          id: newId,
+          createdAt: now,
+          updatedAt: now,
+          userCount: 0,
+          isSystemRole: false,
+          isDefault: false,
+          level: 1,
+          code: '',
+          description: '',
+          permissions: [],
+          ...roleData,
+        };
+        set((state) => ({
+          roles: [...state.roles, newRole],
+        }));
+      },
+
+      updateRole: (id, roleData) => {
+        set((state) => ({
+          roles: state.roles.map((role) =>
+            role.id === id
+              ? { ...role, ...roleData, updatedAt: new Date().toISOString() }
+              : role,
+          ),
+        }));
+      },
+
+      deleteRole: (id) => {
+        set((state) => ({
+          roles: state.roles.filter((role) => role.id !== id),
+        }));
+      },
+    }),
+    {
+      name: 'user-store', // localStorage key
+    },
+  ),
+);

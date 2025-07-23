@@ -1,17 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import LogoDark from '../../images/logo/logo-dark.svg';
-import Logo from '../../images/logo/logo.svg';
 import { useState } from 'react';
 import { KeyIcon, UserIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import useUserStore from '@/store/userStore';
+import { useUserStore } from '@/store/useUserStore';
 
 const SignIn: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { setUser } = useUserStore();
+  const { setUser, users, fetchUsers } = useUserStore();
 
   interface FormData {
     email_or_username: string;
@@ -23,10 +21,20 @@ const SignIn: React.FC = () => {
     password: '',
   });
 
-  const demoUser = {
-    email: 'test@example.com',
-    password: '1234',
-  };
+  // Load users on component mount
+  React.useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Demo credentials for admin users
+  const demoCredentials = [
+    {
+      email: 'admin@course21.com',
+      username: 'Ramit_Vishwakarma',
+      password: 'admin123',
+    },
+    { email: 'demo@course21.com', username: 'demo', password: 'demo123' }, // Fallback demo
+  ];
 
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -34,19 +42,71 @@ const SignIn: React.FC = () => {
 
   const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (
-      data.email_or_username === demoUser.email &&
-      data.password === demoUser.password
-    ) {
-      setUser(demoUser.email);
-      toast({
-        title: 'Login Successful',
-        variant: 'success',
-      });
-      navigate('/admin/course-dashboard');
+
+    // Find matching demo credentials
+    const validCredential = demoCredentials.find(
+      (cred) =>
+        (cred.email === data.email_or_username ||
+          cred.username === data.email_or_username) &&
+        cred.password === data.password,
+    );
+
+    if (validCredential) {
+      // Find the actual user from our sample data
+      const user = users.find(
+        (u) =>
+          u.email === validCredential.email ||
+          u.username === validCredential.username,
+      );
+
+      if (user) {
+        setUser(user);
+        toast({
+          title: 'स्वागत है! Welcome!',
+          description: `Logged in as ${user.name} (${user.roleName})`,
+        });
+        navigate('/admin/course-dashboard');
+      } else {
+        // Fallback for demo user
+        const demoUser = {
+          id: 'demo-1',
+          name: 'Demo Admin',
+          email: validCredential.email,
+          username: validCredential.username,
+          avatar:
+            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
+          roleId: 'role-1',
+          roleName: 'Admin',
+          permissions: [
+            'manage_users',
+            'manage_courses',
+            'manage_analytics',
+            'manage_system',
+          ],
+          location: 'Delhi, India',
+          isActive: true,
+          isEmailVerified: true,
+          twoFactorEnabled: false,
+          isInstructor: false,
+          coursesEnrolled: 0,
+          coursesCompleted: 0,
+          certificatesEarned: 0,
+          totalLearningTime: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+        };
+        setUser(demoUser);
+        toast({
+          title: 'Demo Login Successful',
+          description: 'Logged in with demo credentials',
+        });
+        navigate('/admin/course-dashboard');
+      }
     } else {
       toast({
         title: 'Login Failed',
+        description: 'Invalid credentials. Try: admin@course21.com / admin123',
         variant: 'destructive',
       });
     }
@@ -60,12 +120,11 @@ const SignIn: React.FC = () => {
             <div className="hidden w-full xl:block xl:w-1/2">
               <div className="py-17.5 px-26 text-center">
                 <Link className="mb-5.5 inline-block" to="/">
-                  <img className="hidden dark:block" src={Logo} alt="Logo" />
-                  <img className="dark:hidden" src={LogoDark} alt="Logo" />
+                  <img className="h-10" src="/logo.png" alt="Logo" />
                 </Link>
 
                 <p className="2xl:px-20">
-                  Welcome to Course21.
+                  Welcome!
                   <br />
                   Sign in to your account to continue.
                 </p>
@@ -247,6 +306,22 @@ const SignIn: React.FC = () => {
                       value="Sign In"
                       className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
                     />
+                  </div>
+
+                  {/* Demo Credentials Info */}
+                  <div className="mb-5 p-4 bg-blue-50 dark:bg-boxdark-2 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                      🚀 Demo Credentials
+                    </h3>
+                    <div className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
+                      <p>
+                        <strong>Admin:</strong> admin@course21.com / admin123
+                      </p>
+
+                      <p>
+                        <strong>Fallback:</strong> demo@course21.com / demo123
+                      </p>
+                    </div>
                   </div>
 
                   <div className="mt-6 text-md text-center">

@@ -1,136 +1,357 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import {
+  sampleAnalyticsOverview,
+  sampleCourseAnalytics,
+  sampleRevenueAnalytics,
+  sampleEngagementAnalytics,
+  sampleDashboardMetrics,
+} from '../data/sample/analytics';
+import {
+  type AnalyticsOverview,
+  type CourseAnalytics,
+  type RevenueAnalytics,
+  type EngagementAnalytics,
+  type DashboardMetrics as BaseDashboardMetrics,
+  type DataPoint,
+} from '../types';
 
-// Sample analytics data
-const AnalyticsData = {
-  totalCourses: 12,
-  totalModules: 48,
-  totalLectures: 192,
-  totalUsers: 2450,
-  visitorsToday: 156,
-  visitorsThisWeek: 987,
-  visitorsThisMonth: 3256,
-  revenueToday: 2500,
-  revenueThisWeek: 15000,
-  revenueThisMonth: 85000,
-  userGrowthData: [
-    { name: 'Jan', users: 400 },
-    { name: 'Feb', users: 600 },
-    { name: 'Mar', users: 510 },
-    { name: 'Apr', users: 800 },
-    { name: 'May', users: 700 },
-    { name: 'Jun', users: 1200 },
-    { name: 'Jul', users: 900 },
-    { name: 'Aug', users: 1100 },
-    { name: 'Sep', users: 1400 },
-    { name: 'Oct', users: 900 },
-    { name: 'Nov', users: 1700 },
-    { name: 'Dec', users: 2000 },
-  ],
-  revenueGrowthData: [
-    { name: 'Jan', revenue: 40000 },
-    { name: 'Feb', revenue: 60000 },
-    { name: 'Mar', revenue: 51000 },
-    { name: 'Apr', revenue: 80000 },
-    { name: 'May', revenue: 70000 },
-    { name: 'Jun', revenue: 120000 },
-    { name: 'Jul', revenue: 90000 },
-    { name: 'Aug', revenue: 110000 },
-    { name: 'Sep', revenue: 140000 },
-    { name: 'Oct', revenue: 90000 },
-    { name: 'Nov', revenue: 170000 },
-    { name: 'Dec', revenue: 200000 },
-  ],
-  topCourses: [
-    { id: 1, name: 'JavaScript Fundamentals', students: 450, revenue: 45000 },
-    { id: 2, name: 'React Complete Guide', students: 380, revenue: 38000 },
-    { id: 3, name: 'Node.js Masterclass', students: 320, revenue: 32000 },
-    { id: 4, name: 'Python for Beginners', students: 300, revenue: 30000 },
-    { id: 5, name: 'Data Science with Python', students: 280, revenue: 28000 },
-  ],
-};
+// Enhanced dashboard metrics interface
+export interface EnhancedDashboardMetrics extends BaseDashboardMetrics {
+  revenueGrowth: number; // percentage
+  userGrowth: number; // percentage
+  topPerformingCourse: string;
+  mostActiveUsers: number;
+}
+
+export interface ChartData {
+  userGrowth: { label: string; value: number }[];
+  revenueGrowth: { label: string; value: number }[];
+  coursePerformance: CourseAnalytics[];
+  completionRates: { courseId: string; courseName: string; rate: number }[];
+  monthlyEnrollments: { month: string; enrollments: number }[];
+  paymentMethodDistribution: {
+    method: string;
+    amount: number;
+    percentage: number;
+  }[];
+}
+
+export interface RealtimeMetrics {
+  activeUsers: number;
+  todayEnrollments: number;
+  todayRevenue: number;
+  todayCompletions: number;
+  avgSessionDuration: number;
+  bounceRate: number;
+}
 
 interface AnalyticsStore {
-  data: typeof AnalyticsData;
+  overview: AnalyticsOverview;
+  courseAnalytics: CourseAnalytics[];
+  revenueAnalytics: RevenueAnalytics;
+  engagementAnalytics: EngagementAnalytics;
+  dashboardMetrics: EnhancedDashboardMetrics | null;
+  chartData: ChartData | null;
+  realtimeMetrics: RealtimeMetrics | null;
   isLoading: boolean;
   error: string | null;
 
   // Fetch operations
-  fetchAnalytics: () => void;
-  fetchBasicReport: () => void;
-  fetchChartData: () => void;
+  fetchAnalytics: () => Promise<void>;
+  refreshDashboardMetrics: () => void;
+  generateChartData: () => void;
+  updateRealtimeMetrics: () => void;
+
+  // Calculation methods
+  calculateTotalRevenue: () => number;
+  calculateUserGrowth: () => number;
+  calculateRevenueGrowth: () => number;
+  calculateAvgCompletionRate: () => number;
+  getTopPerformingCourse: () => string;
+  getCourseCompletionRates: () => {
+    courseId: string;
+    courseName: string;
+    rate: number;
+  }[];
+  getMonthlyEnrollments: () => { month: string; enrollments: number }[];
+  getPaymentMethodDistribution: () => {
+    method: string;
+    amount: number;
+    percentage: number;
+  }[];
+
+  // Update methods
+  updateCourseAnalytics: (
+    courseId: string,
+    data: Partial<CourseAnalytics>,
+  ) => void;
+  addRevenueEntry: (amount: number, method: string, courseId?: string) => void;
+  incrementUserCount: () => void;
+  updateCompletionRate: (courseId: string, newRate: number) => void;
 }
 
-export const useAnalyticsStore = create<AnalyticsStore>((set) => ({
-  data: {
-    totalCourses: 0,
-    totalModules: 0,
-    totalLectures: 0,
-    totalUsers: 0,
-    visitorsToday: 0,
-    visitorsThisWeek: 0,
-    visitorsThisMonth: 0,
-    revenueToday: 0,
-    revenueThisWeek: 0,
-    revenueThisMonth: 0,
-    userGrowthData: [],
-    revenueGrowthData: [],
-    topCourses: [],
-  },
-  isLoading: false,
-  error: null,
+export const useAnalyticsStore = create<AnalyticsStore>()(
+  persist(
+    (set, get) => ({
+      overview: {} as AnalyticsOverview,
+      courseAnalytics: [],
+      revenueAnalytics: {} as RevenueAnalytics,
+      engagementAnalytics: {} as EngagementAnalytics,
+      dashboardMetrics: null,
+      chartData: null,
+      realtimeMetrics: null,
+      isLoading: false,
+      error: null,
 
-  fetchAnalytics: () => {
-    set({ isLoading: true, error: null });
-    try {
-      // Instead of API call, use dummy data
-      setTimeout(() => {
-        set({
-          data: AnalyticsData,
-          isLoading: false,
+      fetchAnalytics: async () => {
+        try {
+          set({ isLoading: true });
+          const currentOverview = get().overview;
+
+          // Always load sample data if not present
+          if (
+            !currentOverview.totalRevenue ||
+            currentOverview.totalRevenue === 0
+          ) {
+            set({
+              overview: sampleAnalyticsOverview,
+              courseAnalytics: sampleCourseAnalytics,
+              revenueAnalytics: sampleRevenueAnalytics,
+              engagementAnalytics: sampleEngagementAnalytics,
+              isLoading: false,
+            });
+
+            // Force generation of dependent data
+            setTimeout(() => {
+              get().refreshDashboardMetrics();
+              get().generateChartData();
+              get().updateRealtimeMetrics();
+            }, 100);
+          } else {
+            set({ isLoading: false });
+          }
+        } catch (error) {
+          console.error('Error fetching analytics:', error);
+          set({ error: 'Failed to fetch analytics', isLoading: false });
+        }
+      },
+
+      refreshDashboardMetrics: () => {
+        const { overview, courseAnalytics } = get();
+
+        const topCourse =
+          courseAnalytics.length > 0
+            ? courseAnalytics.reduce((prev, current) =>
+                prev.totalRevenue > current.totalRevenue ? prev : current,
+              )
+            : null;
+
+        const enhancedMetrics: EnhancedDashboardMetrics = {
+          ...sampleDashboardMetrics,
+          revenueGrowth: overview.revenueGrowth,
+          userGrowth: overview.userGrowth,
+          topPerformingCourse: topCourse?.courseName || 'N/A',
+          mostActiveUsers: overview.activeUsers,
+        };
+
+        set({ dashboardMetrics: enhancedMetrics });
+      },
+
+      generateChartData: () => {
+        const { revenueAnalytics, courseAnalytics, engagementAnalytics } =
+          get();
+
+        // Generate monthly data for better chart visualization
+        const months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+
+        // Generate realistic user growth data
+        const userGrowthData = months.map((month, index) => ({
+          label: month,
+          value: Math.floor(2000 + index * 500 + Math.random() * 1000),
+        }));
+
+        // Generate realistic revenue growth data (in thousands for better display)
+        const revenueGrowthData = months.map((month, index) => ({
+          label: month,
+          value: Math.floor(5000 + index * 2000 + Math.random() * 3000) * 1000, // Convert to actual amounts
+        }));
+
+        console.log('Generated Chart Data:', {
+          userGrowthData,
+          revenueGrowthData,
+          courseAnalytics,
         });
-      }, 500);
-    } catch (error) {
-      set({ error: 'Failed to fetch analytics data', isLoading: false });
-    }
-  },
 
-  fetchBasicReport: () => {
-    set({ isLoading: true, error: null });
-    try {
-      // Return a subset of the analytics data
-      setTimeout(() => {
-        set((state) => ({
-          data: {
-            ...state.data,
-            totalCourses: AnalyticsData.totalCourses,
-            totalModules: AnalyticsData.totalModules,
-            totalLectures: AnalyticsData.totalLectures,
-            totalUsers: AnalyticsData.totalUsers,
-          },
-          isLoading: false,
-        }));
-      }, 500);
-    } catch (error) {
-      set({ error: 'Failed to fetch basic report', isLoading: false });
-    }
-  },
+        const chartData: ChartData = {
+          userGrowth: userGrowthData,
+          revenueGrowth: revenueGrowthData,
+          coursePerformance: courseAnalytics,
+          completionRates: courseAnalytics.map((course) => ({
+            courseId: course.courseId,
+            courseName: course.courseName,
+            rate: course.completionRate,
+          })),
+          monthlyEnrollments: months.slice(-6).map((month, index) => ({
+            month: month,
+            enrollments: Math.floor(1000 + index * 200 + Math.random() * 500),
+          })),
+          paymentMethodDistribution: revenueAnalytics.paymentMethods?.map(
+            (pm) => ({
+              method: pm.method,
+              amount: pm.revenue,
+              percentage: pm.percentage,
+            }),
+          ) || [
+            { method: 'UPI', amount: 382250000, percentage: 45.2 },
+            {
+              method: 'Credit/Debit Card',
+              amount: 189850000,
+              percentage: 32.8,
+            },
+            { method: 'Net Banking', amount: 95750000, percentage: 16.3 },
+            { method: 'Digital Wallet', amount: 41650000, percentage: 5.7 },
+          ],
+        };
 
-  fetchChartData: () => {
-    set({ isLoading: true, error: null });
-    try {
-      // Return chart data
-      setTimeout(() => {
-        set((state) => ({
-          data: {
-            ...state.data,
-            userGrowthData: AnalyticsData.userGrowthData,
-            revenueGrowthData: AnalyticsData.revenueGrowthData,
-          },
-          isLoading: false,
+        set({ chartData });
+        console.log('Chart data set in store:', chartData);
+      },
+
+      updateRealtimeMetrics: () => {
+        const { overview, engagementAnalytics } = get();
+
+        const realtimeMetrics: RealtimeMetrics = {
+          activeUsers: overview.activeUsers,
+          todayEnrollments: Math.floor(overview.totalEnrollments * 0.02),
+          todayRevenue: Math.floor(overview.totalRevenue * 0.003),
+          todayCompletions: Math.floor(overview.totalEnrollments * 0.01),
+          avgSessionDuration: engagementAnalytics.sessionDuration.average,
+          bounceRate: 25, // Default bounce rate for demo
+        };
+
+        set({ realtimeMetrics });
+      },
+
+      calculateTotalRevenue: () => get().overview.totalRevenue,
+      calculateUserGrowth: () => get().overview.userGrowth,
+      calculateRevenueGrowth: () => get().overview.revenueGrowth,
+      calculateAvgCompletionRate: () => get().overview.averageCompletionRate,
+
+      getTopPerformingCourse: () => {
+        const courseAnalytics = get().courseAnalytics;
+        if (courseAnalytics.length === 0) return 'N/A';
+        const topCourse = courseAnalytics.reduce((prev, current) =>
+          prev.totalRevenue > current.totalRevenue ? prev : current,
+        );
+        return topCourse?.courseName || 'N/A';
+      },
+
+      getCourseCompletionRates: () => {
+        return get().courseAnalytics.map((course) => ({
+          courseId: course.courseId,
+          courseName: course.courseName,
+          rate: course.completionRate,
         }));
-      }, 500);
-    } catch (error) {
-      set({ error: 'Failed to fetch chart data', isLoading: false });
-    }
-  },
-}));
+      },
+
+      getMonthlyEnrollments: () => {
+        const courseAnalytics = get().courseAnalytics;
+        const monthlyData = courseAnalytics.reduce(
+          (acc, course) => {
+            course.enrollmentTrend.forEach((point) => {
+              const existing = acc.find((item) => item.month === point.label);
+              if (existing) {
+                existing.enrollments += point.value;
+              } else {
+                acc.push({ month: point.label, enrollments: point.value });
+              }
+            });
+            return acc;
+          },
+          [] as { month: string; enrollments: number }[],
+        );
+
+        return monthlyData;
+      },
+
+      getPaymentMethodDistribution: () => {
+        return (
+          get().revenueAnalytics.paymentMethods.map((pm) => ({
+            method: pm.method,
+            amount: pm.revenue,
+            percentage: pm.percentage,
+          })) || []
+        );
+      },
+
+      updateCourseAnalytics: (courseId, data) => {
+        set((state) => ({
+          courseAnalytics: state.courseAnalytics.map((course) =>
+            course.courseId === courseId ? { ...course, ...data } : course,
+          ),
+        }));
+      },
+
+      addRevenueEntry: (amount, method, courseId) => {
+        set((state) => {
+          const updatedOverview = {
+            ...state.overview,
+            totalRevenue: state.overview.totalRevenue + amount,
+          };
+
+          let updatedCourseAnalytics = state.courseAnalytics;
+          if (courseId) {
+            updatedCourseAnalytics = state.courseAnalytics.map((course) =>
+              course.courseId === courseId
+                ? { ...course, totalRevenue: course.totalRevenue + amount }
+                : course,
+            );
+          }
+
+          return {
+            overview: updatedOverview,
+            courseAnalytics: updatedCourseAnalytics,
+          };
+        });
+      },
+
+      incrementUserCount: () => {
+        set((state) => ({
+          overview: {
+            ...state.overview,
+            totalUsers: state.overview.totalUsers + 1,
+          },
+        }));
+      },
+
+      updateCompletionRate: (courseId, newRate) => {
+        set((state) => ({
+          courseAnalytics: state.courseAnalytics.map((course) =>
+            course.courseId === courseId
+              ? { ...course, completionRate: newRate }
+              : course,
+          ),
+        }));
+      },
+    }),
+    {
+      name: 'analytics-store',
+    },
+  ),
+);
+
+export default useAnalyticsStore;

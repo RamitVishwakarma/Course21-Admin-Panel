@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { IdentificationIcon } from '@heroicons/react/20/solid';
 import { useState } from 'react';
 import {
@@ -11,16 +11,12 @@ import {
 import { PlusCircleIcon } from '@heroicons/react/20/solid';
 import { useToast } from '@/components/ui/use-toast';
 import { AtSymbolIcon, KeyIcon, UserIcon } from '@heroicons/react/24/solid';
-import Role from '../../interfaces/Roles';
-import { SelectRole } from './Select';
 import { useUserStore } from '@/store/useUserStore';
 
 export default function CreateUser({
   refreshPage,
-  roles,
 }: {
   refreshPage: () => void;
-  roles: Role[];
 }) {
   interface FormData {
     name: string;
@@ -39,15 +35,7 @@ export default function CreateUser({
   // dialog state
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-
-  // Get addUser function from user store
-  const addUser = useUserStore((state) => state.addUser);
-  const fetchUsers = useUserStore((state) => state.fetchUsers);
-
-  // Ensure users are loaded
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  const { addUser } = useUserStore();
 
   const handleFormData = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -63,13 +51,25 @@ export default function CreateUser({
         username: data.username,
         email: data.email,
         password: data.password,
-        // Default values, would be updated by the SelectRole component
-        role_id: 0,
-        role_name: '',
+        status: 1,
+        verified: 0,
+        roles_mask: 0,
+        role_id: 1, // Default role
+        created_at: null,
+        updated_at: null,
+        deleted_at: null,
       });
 
       toast({
-        title: 'User Added Successfully',
+        title: 'User Added Successfully!',
+      });
+      //   // Default values, would be updated by the SelectRole component
+      //   role_id: 0,
+      //   role_name: '',
+      // });
+
+      toast({
+        title: 'User Added Successfully (Emergency Mode)',
       });
 
       // Reset form fields
@@ -182,13 +182,12 @@ export default function CreateUser({
               </span>
             </div>
           </div>
-          {/* select */}
-          <SelectRole
-            roles={roles}
-            selected_option="Select Role"
-            userId={0}
-            refreshPage={refreshPage}
-          />
+          {/* Note: Role will be set to default (1) and can be changed later */}
+          <div className="mb-4.5">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Role will be set to default and can be updated after creation.
+            </p>
+          </div>
 
           <DialogFooter>
             <div className="mb-5">

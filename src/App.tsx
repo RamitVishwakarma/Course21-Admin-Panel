@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
-import Loader from './common/Loader';
-import PageTitle from './components/PageTitle';
+import Loader from './components/ui/loader';
 
 import {
   SignIn,
@@ -13,9 +13,17 @@ import {
   ManageUser,
   ManageRole,
   QuizCreate,
+  LectureList,
+  StreamLecture,
+  UserDashboard,
+  QuizTakeTest,
+  AdvancedAnalytics,
+  Dashboard,
+  DataManagement,
+  GlobalSearch,
+  PageTitle,
+  QuickActionsMenu,
 } from './utils/Lazyloading';
-import { Toaster } from './components/ui/toaster';
-import Dashboard from './pages/Dashboard/Dashboard';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -110,7 +118,72 @@ function App() {
               </>
             }
           />
+          <Route
+            path="course/:courseId/module/:moduleId/lectures"
+            element={
+              <>
+                <PageTitle title="Lectures | Management" />
+                <LectureList />
+              </>
+            }
+          />
+          <Route
+            path="course/:courseId/module/:moduleId/lecture/:lectureId/stream"
+            element={
+              <>
+                <PageTitle title="Lecture | Stream" />
+                <StreamLecture />
+              </>
+            }
+          />
+          <Route
+            path="users/:userId"
+            element={
+              <>
+                <PageTitle title="User | Dashboard" />
+                <UserDashboard />
+              </>
+            }
+          />
+          <Route
+            path="quiz/:quizId/take"
+            element={
+              <>
+                <PageTitle title="Quiz | Take Test" />
+                <QuizTakeTest />
+              </>
+            }
+          />
+          <Route
+            path="analytics"
+            element={
+              <>
+                <PageTitle title="Advanced | Analytics" />
+                <AdvancedAnalytics />
+              </>
+            }
+          />
+          <Route
+            path="data-management"
+            element={
+              <>
+                <PageTitle title="Data | Management" />
+                <DataManagement />
+              </>
+            }
+          />
+          <Route
+            path="global-search"
+            element={
+              <>
+                <PageTitle title="Global | Search" />
+                <GlobalSearch />
+              </>
+            }
+          />
         </Route>
+        {/* Quick Actions Menu - shows on all protected routes */}
+        <Route path="/admin/*" element={<QuickActionsMenu />} />
       </Routes>
       <Toaster />
     </>

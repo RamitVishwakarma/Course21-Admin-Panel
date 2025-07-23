@@ -1,8 +1,8 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/solid';
 import { Fragment, useState } from 'react';
-import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
+import { useUserStore } from '@/store/useUserStore';
 
 export default function DeleteUser({
   userId,
@@ -13,6 +13,7 @@ export default function DeleteUser({
 }) {
   let [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+  const { deleteUser: deleteUserFromStore } = useUserStore();
 
   function closeModal() {
     setIsOpen(false);
@@ -21,24 +22,21 @@ export default function DeleteUser({
     setIsOpen(true);
   }
 
-  const deleteUser = () => {
-    axios
-      .delete(`${import.meta.env.VITE_BACKEND_URL}users/${userId}`)
-      .then((res) => {
-        console.log(res);
-        toast({
-          title: 'User deleted successfully',
-        });
-        refreshPage();
-        closeModal();
-      })
-      .catch((err) => {
-        toast({
-          title: 'User deletion failed',
-          variant: 'destructive',
-        });
-        console.log(err);
+  const deleteUser = async () => {
+    try {
+      await deleteUserFromStore(userId);
+      toast({
+        title: 'User deleted successfully',
       });
+      refreshPage();
+      closeModal();
+    } catch (error) {
+      toast({
+        title: 'User deletion failed',
+        variant: 'destructive',
+      });
+      console.error(error);
+    }
   };
 
   return (

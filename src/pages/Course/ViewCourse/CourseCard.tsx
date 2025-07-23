@@ -1,4 +1,4 @@
-import { Course } from '../../../interfaces/Course';
+import { Course } from '../../../types/Course';
 
 const CourseCard = ({ course }: { course: Course }) => {
   const dateOptions: Intl.DateTimeFormatOptions = {

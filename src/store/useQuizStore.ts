@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // Sample quiz data
 const QuizData = [
@@ -75,6 +76,7 @@ export interface QuizQuestion {
 }
 
 export interface Quiz {
+  courseId: string;
   id: number;
   title: string;
   description: string;
@@ -105,136 +107,144 @@ interface QuizStore {
   deleteQuestion: (id: number) => void;
 }
 
-export const useQuizStore = create<QuizStore>((set, get) => ({
-  quizzes: [],
-  isLoading: false,
-  error: null,
+export const useQuizStore = create<QuizStore>()(
+  persist(
+    (set, get) => ({
+      quizzes: [],
+      isLoading: false,
+      error: null,
 
-  fetchQuizzes: () => {
-    set({ isLoading: true, error: null });
-    try {
-      // Instead of API call, use dummy data
-      set({ quizzes: QuizData, isLoading: false });
-    } catch (error) {
-      set({ error: 'Failed to fetch quizzes', isLoading: false });
-    }
-  },
+      fetchQuizzes: async () => {
+        const currentQuizzes = get().quizzes;
+        if (currentQuizzes.length === 0) {
+          // First load: populate from JSON file
+          set({ quizzes: QuizData, isLoading: false });
+        }
+        // Subsequent calls do nothing - data already in localStorage
+      },
 
-  fetchQuizzesByModuleId: (moduleId) => {
-    return get().quizzes.filter((quiz) => quiz.module_id === moduleId);
-  },
+      fetchQuizzesByModuleId: (moduleId) => {
+        return get().quizzes.filter((quiz) => quiz.module_id === moduleId);
+      },
 
-  fetchQuizById: (id) => {
-    return get().quizzes.find((quiz) => quiz.id === id);
-  },
+      fetchQuizById: (id) => {
+        return get().quizzes.find((quiz) => quiz.id === id);
+      },
 
-  addQuiz: (quizData) => {
-    const newId = Math.max(0, ...get().quizzes.map((quiz) => quiz.id)) + 1;
-    const now = new Date().toISOString();
+      addQuiz: (quizData) => {
+        const newId = Math.max(0, ...get().quizzes.map((quiz) => quiz.id)) + 1;
+        const now = new Date().toISOString();
 
-    const newQuiz: Quiz = {
-      id: newId,
-      ...quizData,
-      created_at: now,
-      updated_at: now,
-    };
+        const newQuiz: Quiz = {
+          id: newId,
+          ...quizData,
+          created_at: now,
+          updated_at: now,
+        };
 
-    set((state) => ({
-      quizzes: [...state.quizzes, newQuiz],
-    }));
+        set((state) => ({
+          quizzes: [...state.quizzes, newQuiz],
+        }));
 
-    return newQuiz;
-  },
+        return newQuiz;
+      },
 
-  updateQuiz: (id, quizData) => {
-    set((state) => ({
-      quizzes: state.quizzes.map((quiz) =>
-        quiz.id === id
-          ? { ...quiz, ...quizData, updated_at: new Date().toISOString() }
-          : quiz,
-      ),
-    }));
-  },
+      updateQuiz: (id, quizData) => {
+        set((state) => ({
+          quizzes: state.quizzes.map((quiz) =>
+            quiz.id === id
+              ? { ...quiz, ...quizData, updated_at: new Date().toISOString() }
+              : quiz,
+          ),
+        }));
+      },
 
-  deleteQuiz: (id) => {
-    set((state) => ({
-      quizzes: state.quizzes.filter((quiz) => quiz.id !== id),
-    }));
-  },
+      deleteQuiz: (id) => {
+        set((state) => ({
+          quizzes: state.quizzes.filter((quiz) => quiz.id !== id),
+        }));
+      },
 
-  addQuestion: (quizId, questionData) => {
-    const quizzes = get().quizzes;
-    const quiz = quizzes.find((q) => q.id === quizId);
+      addQuestion: (quizId, questionData) => {
+        const quizzes = get().quizzes;
+        const quiz = quizzes.find((q) => q.id === quizId);
 
-    if (!quiz) return;
+        if (!quiz) return;
 
-    const newId =
-      Math.max(
-        0,
-        ...quizzes.flatMap((quiz) =>
-          quiz.questions.map((question) => question.id),
-        ),
-      ) + 1;
+        const newId =
+          Math.max(
+            0,
+            ...quizzes.flatMap((quiz) =>
+              quiz.questions.map((question) => question.id),
+            ),
+          ) + 1;
 
-    const newQuestion: QuizQuestion = {
-      id: newId,
-      ...questionData,
-    };
-
-    set((state) => ({
-      quizzes: state.quizzes.map((quiz) =>
-        quiz.id === quizId
-          ? {
-              ...quiz,
-              questions: [...quiz.questions, newQuestion],
-              updated_at: new Date().toISOString(),
-            }
-          : quiz,
-      ),
-    }));
-
-    return newQuestion;
-  },
-
-  updateQuestion: (id, questionData) => {
-    set((state) => ({
-      quizzes: state.quizzes.map((quiz) => {
-        const questionIndex = quiz.questions.findIndex(
-          (question) => question.id === id,
-        );
-
-        if (questionIndex === -1) return quiz;
-
-        const updatedQuestions = [...quiz.questions];
-        updatedQuestions[questionIndex] = {
-          ...updatedQuestions[questionIndex],
+        const newQuestion: QuizQuestion = {
+          id: newId,
           ...questionData,
         };
 
-        return {
-          ...quiz,
-          questions: updatedQuestions,
-          updated_at: new Date().toISOString(),
-        };
-      }),
-    }));
-  },
+        set((state) => ({
+          quizzes: state.quizzes.map((quiz) =>
+            quiz.id === quizId
+              ? {
+                  ...quiz,
+                  questions: [...quiz.questions, newQuestion],
+                  updated_at: new Date().toISOString(),
+                }
+              : quiz,
+          ),
+        }));
 
-  deleteQuestion: (id) => {
-    set((state) => ({
-      quizzes: state.quizzes.map((quiz) => {
-        const hasQuestion = quiz.questions.some(
-          (question) => question.id === id,
-        );
+        return newQuestion;
+      },
 
-        if (!hasQuestion) return quiz;
+      updateQuestion: (id, questionData) => {
+        set((state) => ({
+          quizzes: state.quizzes.map((quiz) => {
+            const questionIndex = quiz.questions.findIndex(
+              (question) => question.id === id,
+            );
 
-        return {
-          ...quiz,
-          questions: quiz.questions.filter((question) => question.id !== id),
-          updated_at: new Date().toISOString(),
-        };
-      }),
-    }));
-  },
-}));
+            if (questionIndex === -1) return quiz;
+
+            const updatedQuestions = [...quiz.questions];
+            updatedQuestions[questionIndex] = {
+              ...updatedQuestions[questionIndex],
+              ...questionData,
+            };
+
+            return {
+              ...quiz,
+              questions: updatedQuestions,
+              updated_at: new Date().toISOString(),
+            };
+          }),
+        }));
+      },
+
+      deleteQuestion: (id) => {
+        set((state) => ({
+          quizzes: state.quizzes.map((quiz) => {
+            const hasQuestion = quiz.questions.some(
+              (question) => question.id === id,
+            );
+
+            if (!hasQuestion) return quiz;
+
+            return {
+              ...quiz,
+              questions: quiz.questions.filter(
+                (question) => question.id !== id,
+              ),
+              updated_at: new Date().toISOString(),
+            };
+          }),
+        }));
+      },
+    }),
+    {
+      name: 'quiz-storage',
+    },
+  ),
+);

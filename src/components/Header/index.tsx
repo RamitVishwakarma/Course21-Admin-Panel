@@ -1,7 +1,3 @@
-import { Link } from 'react-router-dom';
-
-import UserOne from '../../images/user/ProfileImg.jpg';
-import LogoIcon from '../../images/logo/logo-icon.svg';
 import DarkModeSwitcher from './DarkModeSwitcher';
 
 const Header = (props: {
@@ -79,7 +75,7 @@ const Header = (props: {
 
             <div className="h-12 w-12 rounded-full ">
               <img
-                src={UserOne}
+                src="/pfp.jpg"
                 alt="User"
                 className="object-cover h-12 w-12 rounded-full"
               />

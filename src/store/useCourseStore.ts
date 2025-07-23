@@ -1,319 +1,290 @@
 import { create } from 'zustand';
-import { CourseData } from '../data/courseData';
+import { persist } from 'zustand/middleware';
+import { sampleCourses } from '../data/sample/courses';
+import { sampleModules } from '../data/sample/modules';
+import { sampleLectures } from '../data/sample/lectures';
+import { type Course, type Module, type Lecture } from '../types';
 
-export interface Module {
-  id: number;
-  name: string;
-  course_id: number;
-  image_path: string | null;
-  index: number | null;
-  lectures: Lecture[];
-}
-
-export interface Lecture {
-  id: number;
-  course_id: number | null;
-  prefix: string | null;
-  name: string;
-  file_id: string | null;
-  is_trial: boolean | null;
-  image_path: string | null;
-  video_id: string;
-  created_at: string;
-  updated_at: string;
-  index: number;
-  module_id: number;
-  transcodingjob?: {
-    video_id: string | null;
-    status: string;
-  };
-}
-
-export interface Course {
-  id: number;
-  prefix: string | null;
-  name: string;
-  validity: string | null;
-  manager: string | null;
-  price: number;
-  image_path: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  category_id: number | null;
-  modules: Module[];
-}
+// Re-export types for convenience
+export type { Course, Module, Lecture };
 
 interface CourseStore {
   courses: Course[];
+  modules: Module[];
+  lectures: Lecture[];
   isLoading: boolean;
   error: string | null;
 
   // Fetch operations
-  fetchCourses: () => void;
-  fetchCourseById: (id: number) => Course | undefined;
+  fetchCourses: () => Promise<void>;
+  fetchCourseById: (id: string) => Course | undefined;
+  fetchModulesByCourseId: (courseId: string) => Module[];
+  fetchLecturesByModuleId: (moduleId: string) => Lecture[];
 
   // CRUD operations
-  addCourse: (
-    course: Omit<
-      Course,
-      'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'modules'
-    >,
-  ) => void;
-  updateCourse: (id: number, courseData: Partial<Course>) => void;
-  deleteCourse: (id: number) => void;
+  addCourse: (course: Omit<Course, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateCourse: (id: string, courseData: Partial<Course>) => void;
+  deleteCourse: (id: string) => void;
 
   // Module operations
   addModule: (
-    courseId: number,
-    module: Omit<Module, 'id' | 'lectures'>,
+    courseId: string,
+    module: Omit<Module, 'id' | 'createdAt' | 'updatedAt'>,
   ) => void;
-  updateModule: (moduleId: number, moduleData: Partial<Module>) => void;
-  deleteModule: (moduleId: number) => void;
-  updateModuleSequence: (modules: { id: number; index: number }[]) => void;
+  updateModule: (moduleId: string, moduleData: Partial<Module>) => void;
+  deleteModule: (moduleId: string) => void;
+  updateModuleSequence: (courseId: string, moduleIds: string[]) => void;
 
   // Lecture operations
   addLecture: (
-    moduleId: number,
-    lecture: Omit<Lecture, 'id' | 'created_at' | 'updated_at'>,
+    moduleId: string,
+    lecture: Omit<Lecture, 'id' | 'createdAt' | 'updatedAt'>,
   ) => void;
-  updateLecture: (lectureId: number, lectureData: Partial<Lecture>) => void;
-  deleteLecture: (lectureId: number) => void;
+  updateLecture: (lectureId: string, lectureData: Partial<Lecture>) => void;
+  deleteLecture: (lectureId: string) => void;
+  updateLectureSequence: (moduleId: string, lectureIds: string[]) => void;
 }
 
-export const useCourseStore = create<CourseStore>((set, get) => ({
-  courses: [],
-  isLoading: false,
-  error: null,
-
-  fetchCourses: () => {
-    set({ isLoading: true, error: null });
-    try {
-      // Instead of API call, use the local dummy data
-      set({ courses: CourseData, isLoading: false });
-    } catch (error) {
-      set({ error: 'Failed to fetch courses', isLoading: false });
-    }
-  },
-
-  fetchCourseById: (id) => {
-    return get().courses.find((course) => course.id === id);
-  },
-
-  addCourse: (courseData) => {
-    const newId = Math.max(0, ...get().courses.map((course) => course.id)) + 1;
-    const now = new Date().toISOString();
-
-    const newCourse: Course = {
-      id: newId,
-      ...courseData,
-      created_at: now,
-      updated_at: now,
-      deleted_at: null,
+export const useCourseStore = create<CourseStore>()(
+  persist(
+    (set, get) => ({
+      courses: [],
       modules: [],
-    };
-
-    set((state) => ({
-      courses: [...state.courses, newCourse],
-    }));
-  },
-
-  updateCourse: (id, courseData) => {
-    set((state) => ({
-      courses: state.courses.map((course) =>
-        course.id === id
-          ? { ...course, ...courseData, updated_at: new Date().toISOString() }
-          : course,
-      ),
-    }));
-  },
-
-  deleteCourse: (id) => {
-    set((state) => ({
-      courses: state.courses.filter((course) => course.id !== id),
-    }));
-  },
-
-  addModule: (courseId, moduleData) => {
-    const newId =
-      Math.max(
-        0,
-        ...get().courses.flatMap((course) =>
-          course.modules.map((module) => module.id),
-        ),
-      ) + 1;
-
-    const newModule: Module = {
-      id: newId,
-      ...moduleData,
       lectures: [],
-    };
+      isLoading: false,
+      error: null,
 
-    set((state) => ({
-      courses: state.courses.map((course) =>
-        course.id === courseId
-          ? {
-              ...course,
-              modules: [...course.modules, newModule],
-              updated_at: new Date().toISOString(),
-            }
-          : course,
-      ),
-    }));
-  },
+      fetchCourses: async () => {
+        const currentCourses = get().courses;
+        if (currentCourses.length === 0) {
+          // First load: populate from sample data
+          set({
+            courses: sampleCourses,
+            modules: sampleModules,
+            lectures: sampleLectures,
+            isLoading: false,
+          });
+        }
+        // Subsequent calls do nothing - data already in localStorage
+      },
 
-  updateModule: (moduleId, moduleData) => {
-    set((state) => ({
-      courses: state.courses.map((course) => {
-        const moduleIndex = course.modules.findIndex((m) => m.id === moduleId);
-        if (moduleIndex === -1) return course;
+      fetchCourseById: (id) => {
+        return get().courses.find((course) => course.id === id);
+      },
 
-        const updatedModules = [...course.modules];
-        updatedModules[moduleIndex] = {
-          ...updatedModules[moduleIndex],
-          ...moduleData,
-        };
-
-        return {
-          ...course,
-          modules: updatedModules,
-          updated_at: new Date().toISOString(),
-        };
-      }),
-    }));
-  },
-
-  updateModuleSequence: (modules) => {
-    set((state) => ({
-      courses: state.courses.map((course) => {
-        const courseModules = modules.filter((m) =>
-          course.modules.some((cm) => cm.id === m.id),
+      fetchModulesByCourseId: (courseId) => {
+        const course = get().courses.find((c) => c.id === courseId);
+        if (!course) return [];
+        return get().modules.filter((module) =>
+          course.modules.includes(module.id),
         );
+      },
 
-        if (courseModules.length === 0) return course;
+      fetchLecturesByModuleId: (moduleId) => {
+        const module = get().modules.find((m) => m.id === moduleId);
+        if (!module) return [];
+        return get().lectures.filter((lecture) =>
+          module.lectures.includes(lecture.id),
+        );
+      },
 
-        const updatedModules = course.modules.map((module) => {
-          const sequenceItem = modules.find((m) => m.id === module.id);
-          if (!sequenceItem) return module;
-          return {
-            ...module,
-            index: sequenceItem.index,
-          };
-        });
+      addCourse: (courseData) => {
+        const courses = get().courses;
+        const newId =
+          courses.length > 0
+            ? (Math.max(...courses.map((c) => parseInt(c.id))) + 1).toString()
+            : '1';
+        const now = new Date().toISOString();
 
-        return {
-          ...course,
-          modules: updatedModules,
-          updated_at: new Date().toISOString(),
+        const newCourse: Course = {
+          id: newId,
+          ...courseData,
+          createdAt: now,
+          updatedAt: now,
+          modules: [],
+          moduleCount: 0,
+          lectureCount: 0,
+          totalEnrollments: 0,
+          completionRate: 0,
+          averageRating: 0,
+          totalRevenue: 0,
         };
-      }),
-    }));
-  },
 
-  deleteModule: (moduleId) => {
-    set((state) => ({
-      courses: state.courses.map((course) => {
-        const hasModule = course.modules.some((m) => m.id === moduleId);
-        if (!hasModule) return course;
+        set((state) => ({
+          courses: [...state.courses, newCourse],
+        }));
+      },
 
-        return {
-          ...course,
-          modules: course.modules.filter((m) => m.id !== moduleId),
-          updated_at: new Date().toISOString(),
-        };
-      }),
-    }));
-  },
-
-  addLecture: (moduleId, lectureData) => {
-    const newId =
-      Math.max(
-        0,
-        ...get().courses.flatMap((course) =>
-          course.modules.flatMap((module) =>
-            module.lectures.map((lecture) => lecture.id),
+      updateCourse: (id, courseData) => {
+        set((state) => ({
+          courses: state.courses.map((course) =>
+            course.id === id
+              ? {
+                  ...course,
+                  ...courseData,
+                  updatedAt: new Date().toISOString(),
+                }
+              : course,
           ),
-        ),
-      ) + 1;
+        }));
+      },
 
-    const now = new Date().toISOString();
+      deleteCourse: (id) => {
+        set((state) => ({
+          courses: state.courses.filter((course) => course.id !== id),
+        }));
+      },
 
-    const newLecture: Lecture = {
-      id: newId,
-      ...lectureData,
-      created_at: now,
-      updated_at: now,
-    };
+      addModule: (courseId, moduleData) => {
+        const modules = get().modules;
+        const newId =
+          modules.length > 0
+            ? (Math.max(...modules.map((m) => parseInt(m.id))) + 1).toString()
+            : '1';
+        const now = new Date().toISOString();
 
-    set((state) => ({
-      courses: state.courses.map((course) => ({
-        ...course,
-        modules: course.modules.map((module) => {
-          if (module.id !== moduleId) return module;
-          return {
-            ...module,
-            lectures: [...module.lectures, newLecture],
-          };
-        }),
-        updated_at: module.id === moduleId ? now : course.updated_at,
-      })),
-    }));
-  },
+        const newModule: Module = {
+          id: newId,
+          ...moduleData,
+          createdAt: now,
+          updatedAt: now,
+          lectures: [],
+          lectureCount: 0,
+        };
 
-  updateLecture: (lectureId, lectureData) => {
-    const now = new Date().toISOString();
+        set((state) => ({
+          modules: [...state.modules, newModule],
+          courses: state.courses.map((course) =>
+            course.id === courseId
+              ? {
+                  ...course,
+                  modules: [...course.modules, newId],
+                  moduleCount: course.moduleCount + 1,
+                  updatedAt: now,
+                }
+              : course,
+          ),
+        }));
+      },
 
-    set((state) => ({
-      courses: state.courses.map((course) => ({
-        ...course,
-        modules: course.modules.map((module) => {
-          const lectureIndex = module.lectures.findIndex(
-            (l) => l.id === lectureId,
-          );
-          if (lectureIndex === -1) return module;
+      updateModule: (moduleId, moduleData) => {
+        const now = new Date().toISOString();
 
-          const updatedLectures = [...module.lectures];
-          updatedLectures[lectureIndex] = {
-            ...updatedLectures[lectureIndex],
-            ...lectureData,
-            updated_at: now,
-          };
+        set((state) => ({
+          modules: state.modules.map((module) =>
+            module.id === moduleId
+              ? { ...module, ...moduleData, updatedAt: now }
+              : module,
+          ),
+        }));
+      },
 
-          return {
-            ...module,
-            lectures: updatedLectures,
-          };
-        }),
-        updated_at: course.modules.some((m) =>
-          m.lectures.some((l) => l.id === lectureId),
-        )
-          ? now
-          : course.updated_at,
-      })),
-    }));
-  },
+      deleteModule: (moduleId) => {
+        const now = new Date().toISOString();
 
-  deleteLecture: (lectureId) => {
-    const now = new Date().toISOString();
+        set((state) => ({
+          modules: state.modules.filter((m) => m.id !== moduleId),
+          courses: state.courses.map((course) => {
+            const hasModule = course.modules.includes(moduleId);
+            if (!hasModule) return course;
 
-    set((state) => ({
-      courses: state.courses.map((course) => ({
-        ...course,
-        modules: course.modules.map((module) => {
-          const hasLecture = module.lectures.some((l) => l.id === lectureId);
-          if (!hasLecture) return module;
+            return {
+              ...course,
+              modules: course.modules.filter((id) => id !== moduleId),
+              moduleCount: Math.max(0, course.moduleCount - 1),
+              updatedAt: now,
+            };
+          }),
+        }));
+      },
 
-          return {
-            ...module,
-            lectures: module.lectures.filter((l) => l.id !== lectureId),
-          };
-        }),
-        updated_at: course.modules.some((m) =>
-          m.lectures.some((l) => l.id === lectureId),
-        )
-          ? now
-          : course.updated_at,
-      })),
-    }));
-  },
-}));
+      updateModuleSequence: (courseId, moduleIds) => {
+        const now = new Date().toISOString();
+
+        set((state) => ({
+          courses: state.courses.map((course) =>
+            course.id === courseId
+              ? { ...course, modules: moduleIds, updatedAt: now }
+              : course,
+          ),
+        }));
+      },
+
+      addLecture: (moduleId, lectureData) => {
+        const lectures = get().lectures;
+        const newId =
+          lectures.length > 0
+            ? (Math.max(...lectures.map((l) => parseInt(l.id))) + 1).toString()
+            : '1';
+        const now = new Date().toISOString();
+
+        const newLecture: Lecture = {
+          id: newId,
+          ...lectureData,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        set((state) => ({
+          lectures: [...state.lectures, newLecture],
+          modules: state.modules.map((module) =>
+            module.id === moduleId
+              ? {
+                  ...module,
+                  lectures: [...module.lectures, newId],
+                  lectureCount: module.lectureCount + 1,
+                  updatedAt: now,
+                }
+              : module,
+          ),
+        }));
+      },
+
+      updateLecture: (lectureId, lectureData) => {
+        const now = new Date().toISOString();
+
+        set((state) => ({
+          lectures: state.lectures.map((lecture) =>
+            lecture.id === lectureId
+              ? { ...lecture, ...lectureData, updatedAt: now }
+              : lecture,
+          ),
+        }));
+      },
+
+      deleteLecture: (lectureId) => {
+        const now = new Date().toISOString();
+
+        set((state) => ({
+          lectures: state.lectures.filter((l) => l.id !== lectureId),
+          modules: state.modules.map((module) => {
+            const hasLecture = module.lectures.includes(lectureId);
+            if (!hasLecture) return module;
+
+            return {
+              ...module,
+              lectures: module.lectures.filter((id) => id !== lectureId),
+              lectureCount: Math.max(0, module.lectureCount - 1),
+              updatedAt: now,
+            };
+          }),
+        }));
+      },
+
+      updateLectureSequence: (moduleId, lectureIds) => {
+        const now = new Date().toISOString();
+
+        set((state) => ({
+          modules: state.modules.map((module) =>
+            module.id === moduleId
+              ? { ...module, lectures: lectureIds, updatedAt: now }
+              : module,
+          ),
+        }));
+      },
+    }),
+    {
+      name: 'course-store', // localStorage key
+    },
+  ),
+);

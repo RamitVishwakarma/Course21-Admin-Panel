@@ -1,4 +1,47 @@
-export const CourseData = [
+export interface Module {
+  id: number;
+  name: string;
+  course_id: number;
+  image_path: string | null;
+  index: number | null;
+  lectures: Lecture[];
+}
+
+export interface Lecture {
+  id: number;
+  course_id: number | null;
+  prefix: string | null;
+  name: string;
+  file_id: string | null;
+  is_trial: boolean | null;
+  image_path: string | null;
+  video_id: string;
+  created_at: string;
+  updated_at: string;
+  index: number;
+  module_id: number;
+  transcodingjob?: {
+    video_id: string | null;
+    status: string;
+  };
+}
+
+export interface Course {
+  id: number;
+  prefix: string | null;
+  name: string;
+  validity: string | null;
+  manager: string | null;
+  price: number;
+  image_path: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  category_id: number | null;
+  modules: Module[];
+}
+
+export const CourseData: Course[] = [
   {
     id: 96,
     prefix: null,

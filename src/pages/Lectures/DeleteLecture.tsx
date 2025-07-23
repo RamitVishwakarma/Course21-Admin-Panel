@@ -1,29 +1,31 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { TrashIcon } from '@heroicons/react/24/solid';
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useLectureStore } from '@/store/useLectureStore';
+import { useModuleStore } from '@/store/useModuleStore';
 
 export default function DeleteLecture({
   lectureId,
   refresh,
 }: {
-  lectureId: number;
+  lectureId: string;
   refresh: () => void;
 }) {
   let [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
-  // Get delete function from lecture store
+  // Get stores and data
   const deleteLectureFromStore = useLectureStore(
     (state) => state.deleteLecture,
   );
-  const fetchLectures = useLectureStore((state) => state.fetchLectures);
+  const removeLectureFromModule = useModuleStore(
+    (state) => state.removeLectureFromModule,
+  );
+  const lectures = useLectureStore((state) => state.lectures);
 
-  // Ensure lectures are loaded
-  useEffect(() => {
-    fetchLectures();
-  }, [fetchLectures]);
+  // Find the lecture to get its moduleId
+  const lecture = lectures.find((l) => l.id === lectureId);
 
   function closeModal() {
     setIsOpen(false);
@@ -37,6 +39,11 @@ export default function DeleteLecture({
     try {
       // Delete the lecture from our store
       deleteLectureFromStore(lectureId);
+
+      // Also remove from module if we have the lecture data
+      if (lecture) {
+        removeLectureFromModule(lecture.moduleId, lectureId);
+      }
 
       toast({
         title: 'Lecture deleted successfully',

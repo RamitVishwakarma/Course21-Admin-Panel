@@ -1,81 +1,118 @@
 import { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { useCourseStore } from '@/store/useCourseStore';
-import { useToast } from '@/components/ui/use-toast';
 import { useParams } from 'react-router-dom';
-import DefaultLayout from '@/layout/DefaultLayout';
-import Loader from '@/common/Loader';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import { SortableContext, arrayMove } from '@dnd-kit/sortable';
+import { type Module, type Lecture } from '../../types';
+import { createPortal } from 'react-dom';
+import DefaultLayout from '../../layout/DefaultLayout';
+import Loader from '../../components/ui/loader';
+import { useToast } from '@/components/ui/use-toast';
+import { useCourseStore } from '@/store/useCourseStore';
+import LectureCard from './LectureCard';
+import CreateLecture from '../Lectures/CreateLecture';
 
-export default function ViewModule() {
-  // Get URL parameters
-  const { courseId: courseIdParam, moduleId: moduleIdParam } = useParams();
-  const courseId = Number(courseIdParam);
-  const moduleId = Number(moduleIdParam);
-
-  const [modules, setModules] = useState<any[]>([]);
+const ViewModule: React.FC = () => {
+  const { moduleId, courseId } = useParams();
+  const [module, setModule] = useState<Module | null>(null);
+  const [lectures, setLectures] = useState<Lecture[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [activeLecture, setActiveLecture] = useState<Lecture | null>(null);
   const { toast } = useToast();
 
-  // Get functions and data from our Zustand store
-  const { courses, fetchCourses, updateModuleSequence } = useCourseStore(
-    (state) => ({
-      courses: state.courses,
-      fetchCourses: state.fetchCourses,
-      updateModuleSequence: state.updateModuleSequence,
+  const { fetchCourses, fetchLecturesByModuleId, updateLectureSequence } =
+    useCourseStore();
+
+  // Getting an array of lecture ids for drag and drop
+  const lectureIds = lectures.map((lecture) => lecture.id);
+
+  useEffect(() => {
+    const loadModuleData = async () => {
+      setLoading(true);
+
+      // Load courses if not already loaded
+      await fetchCourses();
+
+      if (moduleId) {
+        // Re-fetch modules after courses are loaded
+        const { modules: currentModules } = useCourseStore.getState();
+
+        // Find the module
+        const foundModule = currentModules.find((m) => m.id === moduleId);
+        if (foundModule) {
+          setModule(foundModule);
+
+          // Get lectures for this module
+          const moduleLectures = fetchLecturesByModuleId(moduleId);
+          setLectures(moduleLectures);
+        } else {
+          toast({
+            title: 'Module not found',
+            description: `Module ${moduleId} could not be found in course ${courseId}`,
+            variant: 'destructive',
+          });
+        }
+      }
+
+      setLoading(false);
+    };
+
+    loadModuleData();
+  }, [moduleId, courseId, fetchCourses, fetchLecturesByModuleId, toast]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
     }),
   );
 
-  useEffect(() => {
-    // Load courses if not already loaded
-    if (courses.length === 0) {
-      fetchCourses();
-    } else {
-      // Find the course with the matching ID
-      const course = courses.find((course) => course.id === courseId);
-      if (course) {
-        // Find the specific module we want to view
-        const module = course.modules.find((m) => m.id === moduleId);
-        if (module) {
-          setModules([module]);
-        }
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const activeLectureData = lectures.find(
+      (lecture) => lecture.id === active.id,
+    );
+    setActiveLecture(activeLectureData || null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveLecture(null);
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = lectures.findIndex((lecture) => lecture.id === active.id);
+    const newIndex = lectures.findIndex((lecture) => lecture.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newLectureOrder = arrayMove(lectures, oldIndex, newIndex);
+      const newLectureIds = newLectureOrder.map((lecture) => lecture.id);
+
+      setLectures(newLectureOrder);
+
+      // Update the module store with new lecture sequence
+      if (moduleId) {
+        updateLectureSequence(moduleId, newLectureIds);
+
+        toast({
+          title: 'Lecture sequence updated successfully',
+        });
       }
-      setLoading(false);
     }
-  }, [courseId, moduleId, courses, fetchCourses]);
+  };
 
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
-
-    const items = Array.from(modules);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    // Update the index values
-    const updatedItems = items.map((item, index) => ({
-      ...item,
-      index: index + 1, // 1-based index
-    }));
-
-    setModules(updatedItems);
-
-    // Prepare data for the store update
-    const moduleSequence = updatedItems.map((module) => ({
-      id: module.id,
-      index: module.index,
-    }));
-
-    try {
-      // Update sequence in the store
-      updateModuleSequence(moduleSequence);
-      toast({
-        title: 'Module sequence updated successfully',
-      });
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: 'Failed to update module sequence',
-        variant: 'destructive',
-      });
+  const refreshPage = () => {
+    if (moduleId) {
+      const moduleLectures = fetchLecturesByModuleId(moduleId);
+      setLectures(moduleLectures);
     }
   };
 
@@ -83,60 +120,93 @@ export default function ViewModule() {
     <Loader />
   ) : (
     <DefaultLayout>
-      <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <h1 className="text-2xl font-bold mb-4">Module View</h1>
-        <div>
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="modules">
-              {(provided) => (
-                <div
-                  className="flex flex-col space-y-4"
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                >
-                  {modules.map((module, index) => (
-                    <Draggable
-                      key={module.id}
-                      draggableId={module.id.toString()}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className="relative flex flex-wrap justify-between gap-2.5 rounded-lg border border-stroke bg-white py-3 px-6.5 hover:shadow-default dark:border-strokedark dark:bg-boxdark dark:hover:shadow-default"
-                        >
-                          <div className="flex flex-col">
-                            <h2 className="text-xl font-semibold">
-                              {module.name}
-                            </h2>
-                            {module.lectures && module.lectures.length > 0 && (
-                              <div className="mt-4">
-                                <h3 className="text-lg font-medium mb-2">
-                                  Lectures:
-                                </h3>
-                                <ul className="list-disc pl-5">
-                                  {module.lectures.map((lecture: any) => (
-                                    <li key={lecture.id} className="mb-2">
-                                      {lecture.name}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark pb-4">
+        {/* Module Header */}
+        {module && (
+          <div className="border-b border-stroke py-4 px-4 dark:border-strokedark md:px-6 2xl:px-7.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-black dark:text-white">
+                  {module.title}
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {module.description}
+                </p>
+                <div className="flex gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span>{module.lectureCount} lectures</span>
+                  <span>
+                    {Math.floor(module.duration / 60)}h {module.duration % 60}m
+                  </span>
+                  <span
+                    className={`px-2 py-1 rounded text-xs ${
+                      module.isPublished
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                    }`}
+                  >
+                    {module.isPublished ? 'Published' : 'Draft'}
+                  </span>
                 </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Lectures Section */}
+        <div className="border-b font-semibold border-stroke py-4.5 px-4 text-black dark:text-white dark:border-stroke/20 md:px-6 2xl:px-7.5">
+          <div className="flex text-xl items-center justify-between">
+            <p className="font-medium text-2xl">Lectures</p>
+            {moduleId && (
+              <CreateLecture moduleId={moduleId} refreshPage={refreshPage} />
+            )}
+          </div>
         </div>
+
+        {lectures.length === 0 ? (
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+            <p>No lectures in this module yet.</p>
+            <p className="text-sm mt-1">
+              Add your first lecture to get started.
+            </p>
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={lectureIds}>
+              {lectures.map((lecture, index) => (
+                <div key={lecture.id} className="m-4">
+                  <LectureCard
+                    lecture={lecture}
+                    index={index}
+                    refreshPage={refreshPage}
+                    moduleId={moduleId || ''}
+                  />
+                </div>
+              ))}
+            </SortableContext>
+            {createPortal(
+              <div className="text-bodydark">
+                <DragOverlay>
+                  {activeLecture && (
+                    <LectureCard
+                      lecture={activeLecture}
+                      index={0}
+                      refreshPage={refreshPage}
+                      moduleId={moduleId || ''}
+                    />
+                  )}
+                </DragOverlay>
+              </div>,
+              document.body,
+            )}
+          </DndContext>
+        )}
       </div>
     </DefaultLayout>
   );
-}
+};
+
+export default ViewModule;

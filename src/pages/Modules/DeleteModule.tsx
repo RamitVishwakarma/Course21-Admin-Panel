@@ -8,13 +8,11 @@ export default function DeleteModule({
   moduleId,
   refresh,
 }: {
-  moduleId: number;
+  moduleId: string;
   refresh: () => void;
 }) {
   let [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-
-  // Get deleteModule function from our Zustand store
   const deleteModule = useCourseStore((state) => state.deleteModule);
 
   function closeModal() {
@@ -27,7 +25,6 @@ export default function DeleteModule({
 
   const handleDeleteModule = () => {
     try {
-      // Use the store to delete the module
       deleteModule(moduleId);
 
       toast({

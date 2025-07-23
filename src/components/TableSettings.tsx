@@ -1,6 +1,6 @@
 import React from 'react';
 import { BsFillTrashFill, BsFillPencilFill } from 'react-icons/bs';
-import dataJSON from '../../public/data.json';
+import dataJSON from '../../data/data.json';
 
 export const Table = ({ rows, deleteRow, editRow }) => {
   const fields = Object.keys(Object.values(dataJSON)[0]).filter(

@@ -21,9 +21,8 @@ export default function UpdateCourse({
   image_path: string;
 }) {
   const { toast } = useToast();
-
-  // Get updateCourse function from our Zustand store
   const updateCourse = useCourseStore((state) => state.updateCourse);
+  // const updateCourse = useCourseStore((state) => state.updateCourse);
 
   interface FormData {
     name: string;
@@ -80,10 +79,10 @@ export default function UpdateCourse({
     e.preventDefault();
 
     try {
-      // Use Zustand store to update the course
-      updateCourse(courseId, {
-        name: data.name,
-        image_path:
+      // Update course using Zustand store
+      updateCourse(courseId.toString(), {
+        title: data.name,
+        thumbnail:
           typeof data.image_path === 'string'
             ? data.image_path
             : `courses/${Math.random().toString(36).substring(2)}.png`,
@@ -93,9 +92,8 @@ export default function UpdateCourse({
         title: 'Course Updated Successfully',
       });
 
-      // Close dialog and reload page to show changes
+      // Close dialog
       setOpen(false);
-      window.location.reload();
     } catch (error) {
       console.error(error);
       toast({

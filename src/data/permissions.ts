@@ -1,4 +1,10 @@
-[
+export interface Permission {
+  id: number;
+  name: string;
+  permission_code: string;
+}
+
+const permissionsData: Permission[] = [
   {
     id: 1,
     name: 'Create course',
@@ -21,7 +27,9 @@
   },
   {
     id: 6,
-    name: 'Manage Users',
-    permission_code: 'manage_users',
+    name: 'View Reports',
+    permission_code: 'view_reports',
   },
 ];
+
+export default permissionsData;

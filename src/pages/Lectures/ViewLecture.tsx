@@ -1,4 +1,4 @@
-import { Lectures } from '@/interfaces/Lectures';
+import { Lectures } from '@/types/Lectures';
 import { EyeIcon } from '@heroicons/react/20/solid';
 import { useState, useEffect } from 'react';
 import {
@@ -8,7 +8,6 @@ import {
   DialogFooter,
   DialogTitle,
 } from '@/components/ui/dialog';
-import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
 import { VideoPlayer } from './VideoPlayer/VideoPlayer';
 
@@ -27,26 +26,13 @@ const ViewLecture = ({
   useEffect(() => {
     const fetchVideoToken = async () => {
       try {
-        const res = await axios.get(
-          `${
-            import.meta.env.VITE_BACKEND_URL
-          }streams/${VideoId}/removethiswhenfixed`,
-          {
-            headers: {
-              Authorization: `Bearer ${sessionStorage.getItem(
-                'Authorization',
-              )}`,
-            },
-          },
-        );
-        setSrc(
-          `${import.meta.env.VITE_BACKEND_URL}streams/resource/${
-            res.data.token
-          }/master.m3u8`,
-        );
+        // Since we're using static data, use a placeholder video source
+        // For demo purposes, you can replace this with actual video URLs
+        const demoVideoSrc = `https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`;
+        setSrc(demoVideoSrc);
       } catch (e) {
         toast({
-          title: 'Error fetching video token',
+          title: 'Error loading video',
           variant: 'destructive',
         });
       }

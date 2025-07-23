@@ -7,8 +7,6 @@ import { useCourseStore } from '@/store/useCourseStore';
 export default function DeleteCourse({ courseId }: { courseId: number }) {
   let [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-
-  // Get the deleteCourse function from our Zustand store
   const deleteCourse = useCourseStore((state) => state.deleteCourse);
 
   function closeModal() {
@@ -21,7 +19,6 @@ export default function DeleteCourse({ courseId }: { courseId: number }) {
 
   const handleDeleteCourse = () => {
     try {
-      // Delete course from the Zustand store
       deleteCourse(courseId);
 
       toast({
@@ -29,9 +26,6 @@ export default function DeleteCourse({ courseId }: { courseId: number }) {
       });
 
       closeModal();
-
-      // Force page refresh to show updated data
-      window.location.reload();
     } catch (error) {
       console.error(error);
       toast({

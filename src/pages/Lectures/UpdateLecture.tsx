@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { IdentificationIcon, PencilIcon } from '@heroicons/react/20/solid';
 import {
   Dialog,
@@ -17,58 +17,60 @@ export default function UpdateLecture({
   name,
   refreshPage,
 }: {
-  lectureId: number;
-  courseId: number;
-  moduleId: number;
+  lectureId: string;
+  courseId: string;
+  moduleId: string;
   name: string;
   refreshPage: () => void;
 }) {
-  const { toast } = useToast();
-
-  // Get lecture functions from our store
-  const updateLecture = useLectureStore((state) => state.updateLecture);
-  const fetchLectures = useLectureStore((state) => state.fetchLectures);
-  const fetchLectureById = useLectureStore((state) => state.fetchLectureById);
-
-  // Ensure lectures are loaded
-  useEffect(() => {
-    fetchLectures();
-  }, [fetchLectures]);
-
-  // Get the current lecture data
-  const lectureData = fetchLectureById(lectureId);
-
   interface FormData {
     title: string;
     description: string;
-    featured_image: File | string;
-    module_id: number;
-    video_file: File | string;
+    videoDuration: number;
+    type: 'video' | 'text' | 'quiz' | 'assignment';
+    videoUrl: string;
+    content?: string;
+    isFree: boolean;
   }
 
+  const { toast } = useToast();
+
+  const updateLecture = useLectureStore((state) => state.updateLecture);
+  const lectures = useLectureStore((state) => state.lectures);
+  const fetchLectureById = (id: string) =>
+    lectures.find((lecture) => lecture.id === id);
+
+  const lectureData = fetchLectureById(lectureId);
+
   const [data, setData] = useState<FormData>({
-    title: name || '',
+    title: lectureData?.title || '',
     description: lectureData?.description || '',
-    featured_image: new File([''], ''),
-    module_id: moduleId,
-    video_file: new File([], ''),
+    videoDuration: lectureData?.videoDuration || 0,
+    type: lectureData?.type || 'video',
+    videoUrl: lectureData?.videoUrl || '',
+    content: lectureData?.content || '',
+    isFree: lectureData?.isFree || false,
   });
 
-  // Upload progress state for simulation
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
 
   const handleFormData = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
-    if (e.target instanceof HTMLInputElement && e.target.type === 'file') {
-      const name = e.target.name;
-      const file = e.target.files![0];
-      setData({ ...data, [name]: file });
-      return;
+    const { name, value, type } = e.target;
+
+    if (type === 'checkbox') {
+      const target = e.target as HTMLInputElement;
+      setData((prev) => ({ ...prev, [name]: target.checked }));
+    } else if (type === 'number') {
+      setData((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
+    } else {
+      setData((prev) => ({ ...prev, [name]: value }));
     }
-    setData({ ...data, [e.target.name]: e.target.value });
   };
 
   const simulateUpload = () => {
@@ -76,7 +78,7 @@ export default function UpdateLecture({
     setUploadProgress(0);
 
     const interval = setInterval(() => {
-      setUploadProgress((prev) => {
+      setUploadProgress((prev: number) => {
         if (prev >= 100) {
           clearInterval(interval);
           setIsUploading(false);
@@ -92,39 +94,19 @@ export default function UpdateLecture({
   const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Simulate file upload
     simulateUpload();
 
-    // Update the lecture in our store after "upload" is complete
     setTimeout(() => {
       try {
-        // Only update the video URL if a new file is selected
-        const updates: Partial<any> = {
+        const updates = {
           title: data.title,
           description: data.description,
+          videoDuration: data.videoDuration,
+          type: data.type,
+          videoUrl: data.videoUrl,
+          content: data.content,
+          isFree: data.isFree,
         };
-
-        // If video file is selected, simulate a new URL
-        if (
-          data.video_file &&
-          data.video_file instanceof File &&
-          data.video_file.name
-        ) {
-          updates.url = `https://example.com/videos/${Math.random()
-            .toString(36)
-            .substring(2)}.mp4`;
-        }
-
-        // If image file is selected, simulate a new URL
-        if (
-          data.featured_image &&
-          data.featured_image instanceof File &&
-          data.featured_image.name
-        ) {
-          updates.resource_url = `https://example.com/images/${Math.random()
-            .toString(36)
-            .substring(2)}.jpg`;
-        }
 
         updateLecture(lectureId, updates);
 
@@ -147,14 +129,15 @@ export default function UpdateLecture({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="inline-flex text-lg items-center justify-center gap-2.5 rounded-full bg-primary py-2 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-4 xl:px-6">
-          <PencilIcon className="h-4 w-4" />
+        <button className="inline-flex items-center justify-center rounded-md border border-primary py-2 px-3 text-center font-medium text-primary hover:bg-opacity-90 lg:px-4 xl:px-6">
+          <PencilIcon className="h-4 w-4 mr-2" />
           Edit
         </button>
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>Update Lecture</DialogTitle>
         <form onSubmit={formSubmitHandler}>
+          {/* Lecture Title */}
           <div className="mb-4">
             <label className="mb-2.5 block font-medium text-black dark:text-white">
               Lecture Title
@@ -167,82 +150,139 @@ export default function UpdateLecture({
                 onChange={handleFormData}
                 placeholder="Enter Lecture Title"
                 className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                required
               />
               <span className="absolute right-4 top-4">
-                <IdentificationIcon className="w-6 h-6 text-bodydark" />
+                <IdentificationIcon className="h-6 w-6 opacity-50" />
               </span>
             </div>
           </div>
 
-          {/* Lecture Description */}
+          {/* Description */}
           <div className="mb-4">
             <label className="mb-2.5 block font-medium text-black dark:text-white">
-              Lecture Description
+              Description
             </label>
             <textarea
               name="description"
               value={data.description}
               onChange={handleFormData}
-              placeholder="Enter Lecture Description"
-              className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+              placeholder="Enter description"
               rows={3}
+              className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
             />
           </div>
 
+          {/* Video Duration */}
           <div className="mb-4">
             <label className="mb-2.5 block font-medium text-black dark:text-white">
-              Lecture Image
+              Video Duration (seconds)
             </label>
             <input
-              type="file"
-              name="featured_image"
+              type="number"
+              name="videoDuration"
+              value={data.videoDuration}
               onChange={handleFormData}
-              className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
+              placeholder="Duration in seconds"
+              className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
             />
           </div>
 
-          {/* video uploader */}
+          {/* Type */}
           <div className="mb-4">
             <label className="mb-2.5 block font-medium text-black dark:text-white">
-              Lecture Video
+              Lecture Type
             </label>
-            <input
-              type="file"
-              name="video_file"
-              accept="video/*"
+            <select
+              name="type"
+              value={data.type}
               onChange={handleFormData}
-              className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
-            />
+              className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+            >
+              <option value="video">Video</option>
+              <option value="text">Text</option>
+              <option value="quiz">Quiz</option>
+              <option value="assignment">Assignment</option>
+            </select>
           </div>
 
+          {/* Video URL */}
+          {data.type === 'video' && (
+            <div className="mb-4">
+              <label className="mb-2.5 block font-medium text-black dark:text-white">
+                Video URL
+              </label>
+              <input
+                type="url"
+                name="videoUrl"
+                value={data.videoUrl}
+                onChange={handleFormData}
+                placeholder="Enter video URL"
+                className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+              />
+            </div>
+          )}
+
+          {/* Content */}
+          {data.type === 'text' && (
+            <div className="mb-4">
+              <label className="mb-2.5 block font-medium text-black dark:text-white">
+                Content
+              </label>
+              <textarea
+                name="content"
+                value={data.content}
+                onChange={handleFormData}
+                placeholder="Enter lecture content"
+                rows={5}
+                className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+              />
+            </div>
+          )}
+
+          {/* Free Preview */}
+          <div className="mb-6">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                name="isFree"
+                checked={data.isFree}
+                onChange={handleFormData}
+                className="mr-2"
+              />
+              <span className="font-medium text-black dark:text-white">
+                Available as free preview
+              </span>
+            </label>
+          </div>
+
+          {/* Upload Progress */}
           {isUploading && (
             <div className="mb-4">
-              <div className="flex justify-between mb-2">
-                <span className="text-gray-600">Updating lecture...</span>
-                <span className="text-gray-600">
-                  {uploadProgress.toFixed(0)}%
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-blue-700 dark:text-white">
+                  Uploading...
+                </span>
+                <span className="text-sm font-medium text-blue-700 dark:text-white">
+                  {uploadProgress}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                 <div
-                  className="bg-blue-500 h-2.5 rounded-full"
+                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
               </div>
             </div>
           )}
 
-          {/* video uploader end */}
           <DialogFooter>
-            <div className="mb-5">
-              <input
-                type="submit"
-                value={isUploading ? 'Updating...' : 'Submit'}
-                disabled={isUploading}
-                className="w-full font-medium cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              />
-            </div>
+            <button
+              type="submit"
+              disabled={isUploading}
+              className="inline-flex w-full justify-center rounded-md bg-primary py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-primary/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUploading ? 'Updating...' : 'Update Lecture'}
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>
